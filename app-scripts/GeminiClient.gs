@@ -46,19 +46,25 @@ function getModel() {
   var response = UrlFetchApp.fetch(GEMINI_API_BASE + '?key=' + apiKey, { muteHttpExceptions: true });
   var models = JSON.parse(response.getContentText()).models || [];
 
+  var UNSTABLE_PATTERNS = ['omni', 'exp', 'thinking', 'preview', 'lite'];
+
   var candidates = models
     .filter(function (m) {
-      return m.supportedGenerationMethods &&
-             m.supportedGenerationMethods.indexOf('generateContent') !== -1 &&
-             m.name.indexOf('flash') !== -1 &&
-             m.name.indexOf('gemini') !== -1;
+      var name = m.name;
+      if (!m.supportedGenerationMethods || m.supportedGenerationMethods.indexOf('generateContent') === -1) return false;
+      if (name.indexOf('flash') === -1 || name.indexOf('gemini') === -1) return false;
+      return !UNSTABLE_PATTERNS.some(function (p) { return name.indexOf(p) !== -1; });
     })
     .map(function (m) { return m.name.replace('models/', ''); });
 
   if (candidates.length === 0) throw new Error('No suitable Gemini flash model found.');
 
-  // Prefer newer versions: sort descending so e.g. gemini-2.0-flash > gemini-1.5-flash
-  candidates.sort().reverse();
+  // Sort by version number: extract X.Y from gemini-X.Y-flash and sort descending
+  candidates.sort(function (a, b) {
+    var va = parseFloat(a.match(/gemini-(\d+\.\d+)/)?.[1] || '0');
+    var vb = parseFloat(b.match(/gemini-(\d+\.\d+)/)?.[1] || '0');
+    return vb - va;
+  });
   Logger.log('Auto-selected Gemini model: ' + candidates[0]);
   return candidates[0];
 }
