@@ -9,15 +9,15 @@
  */
 
 
-function isKeptUnread(email) {
+function _isKeptUnread(email) {
   return email.category === 'important' && email.priority === 'high';
 }
 
 
-function buildDigest(processed) {
+function _buildDigest(processed) {
   var now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-  var kept   = processed.filter(isKeptUnread);
-  var cleared = processed.filter(function (e) { return !isKeptUnread(e); });
+  var kept   = processed.filter(_isKeptUnread);
+  var cleared = processed.filter(function (e) { return !_isKeptUnread(e); });
 
   var lines = [];
   lines.push('EMAIL DIGEST  ' + now);
@@ -63,7 +63,7 @@ function buildDigest(processed) {
 
 function eveningDigest() {
   Logger.log('Fetching unread emails...');
-  var emails = fetchUnreadEmails(100);
+  var emails = _fetchUnreadEmails(100);
 
   if (emails.length === 0) {
     Logger.log('No unread emails. All done.');
@@ -71,9 +71,9 @@ function eveningDigest() {
   }
 
   Logger.log('Found ' + emails.length + ' unread emails. Sending to Gemini...');
-  var processed = analyzeEmails(emails);
+  var processed = _analyzeEmails(emails);
 
-  var digest = buildDigest(processed);
+  var digest = _buildDigest(processed);
   Logger.log(digest);
 
   // Email the digest to yourself
@@ -84,12 +84,12 @@ function eveningDigest() {
 
   // Mark everything as read except important+high
   var toMark = processed
-    .filter(function (e) { return !isKeptUnread(e); })
+    .filter(function (e) { return !_isKeptUnread(e); })
     .map(function (e) { return e.threadId; });
 
   if (toMark.length > 0) {
     Logger.log('Marking ' + toMark.length + ' threads as read...');
-    markThreadsAsRead(toMark);
+    _markThreadsAsRead(toMark);
     Logger.log('Done.');
   }
 }

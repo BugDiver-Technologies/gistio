@@ -38,7 +38,7 @@ var PROMPT_TEMPLATE = [
  * Returns the model to use. Checks GEMINI_MODEL Script Property first.
  * If not set, fetches available models from the API and picks the best flash model.
  */
-function getModel() {
+function _getModel() {
   var override = PropertiesService.getScriptProperties().getProperty('GEMINI_MODEL');
   if (override) return override;
 
@@ -83,11 +83,11 @@ function getModel() {
  * @param {string} prompt
  * @returns {string}
  */
-function callGemini(prompt) {
+function _callGemini(prompt) {
   var apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
   if (!apiKey) throw new Error('GEMINI_API_KEY not set in Script Properties.');
 
-  var model = getModel();
+  var model = _getModel();
   var url = GEMINI_API_BASE + '/' + model + ':generateContent?key=' + apiKey;
 
   var payload = {
@@ -116,7 +116,7 @@ function callGemini(prompt) {
  * @param {Array<Object>} emails
  * @returns {string}
  */
-function formatEmailsForPrompt(emails) {
+function _formatEmailsForPrompt(emails) {
   return emails.map(function (e) {
     return [
       'Thread ID: ' + e.threadId,
@@ -135,16 +135,16 @@ function formatEmailsForPrompt(emails) {
  * @param {number} batchSize
  * @returns {Array<Object>}
  */
-function analyzeEmails(emails, batchSize) {
+function _analyzeEmails(emails, batchSize) {
   batchSize = batchSize || 20;
   var results = [];
 
   for (var i = 0; i < emails.length; i += batchSize) {
     var batch = emails.slice(i, i + batchSize);
-    Logger.log('Analyzing emails ' + (i + 1) + '–' + (i + batch.length) + ' with ' + getModel() + '...');
+    Logger.log('Analyzing emails ' + (i + 1) + '–' + (i + batch.length) + ' with ' + _getModel() + '...');
 
-    var prompt = PROMPT_TEMPLATE.replace('{emails}', formatEmailsForPrompt(batch));
-    var response = callGemini(prompt);
+    var prompt = PROMPT_TEMPLATE.replace('{emails}', _formatEmailsForPrompt(batch));
+    var response = _callGemini(prompt);
 
     // Extract JSON array from response
     var jsonMatch = response.match(/\[[\s\S]*?\]/);
