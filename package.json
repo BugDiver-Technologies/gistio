@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "clasp": "clasp",
     "login": "clasp login",
-    "create": "clasp create --type standalone --title 'Evening Email Digest' --rootDir .",
+    "create": "clasp create --type standalone --title 'Evening Email Digest' --rootDir app-scripts",
     "push": "clasp push",
     "pull": "clasp pull",
     "open": "clasp open",
