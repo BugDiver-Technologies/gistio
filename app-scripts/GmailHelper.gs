@@ -3,7 +3,7 @@
  * @param {number} maxResults
  * @returns {Array<Object>}
  */
-function _fetchUnreadEmails(maxResults) {
+function fetchUnreadEmails_(maxResults) {
   maxResults = maxResults || 100;
   const threads = GmailApp.search('is:unread in:inbox', 0, maxResults);
   const emails = [];
@@ -26,7 +26,7 @@ function _fetchUnreadEmails(maxResults) {
  * Marks threads as read given a list of thread IDs.
  * @param {Array<string>} threadIds
  */
-function _markThreadsAsRead(threadIds) {
+function markThreadsAsRead_(threadIds) {
   threadIds.forEach(function (id) {
     GmailApp.getThreadById(id).markRead();
   });
