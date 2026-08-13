@@ -1,4 +1,5 @@
 {
+  "timeZone": "UTC",
   "runtimeVersion": "V8",
   "exceptionLogging": "STACKDRIVER",
   "oauthScopes": [

@@ -95,6 +95,6 @@ function eveningDigest() {
 
   // Label all processed threads so they're skipped on the next run
   var allThreadIds = processed.map(function(e) { return e.threadId; });
-  applyLabelToThreads_(allThreadIds, 'digest/processed');
-  Logger.log('Labelled ' + allThreadIds.length + ' threads as digest/processed.');
+  applyLabelToThreads_(allThreadIds, getLabelName_());
+  Logger.log('Labelled ' + allThreadIds.length + ' threads as ' + getLabelName_() + '.');
 }

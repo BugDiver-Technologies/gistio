@@ -5,7 +5,7 @@
  */
 function fetchUnreadEmails_(maxResults) {
   maxResults = maxResults || 100;
-  const threads = GmailApp.search('is:unread in:inbox -label:digest/processed', 0, maxResults);
+  const threads = GmailApp.search('is:unread in:inbox -label:' + getLabelName_(), 0, maxResults);
   const emails = [];
 
   threads.forEach(function (thread) {
@@ -20,6 +20,10 @@ function fetchUnreadEmails_(maxResults) {
   });
 
   return emails;
+}
+
+function getLabelName_() {
+  return PropertiesService.getUserProperties().getProperty('DIGEST_LABEL') || 'digest/processed';
 }
 
 function getOrCreateLabel_(name) {
