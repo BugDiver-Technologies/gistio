@@ -109,20 +109,15 @@ function saveSettings_(e) {
 
 /**
  * Creates (or replaces) the user's daily eveningDigest trigger.
- * Trigger ID is stored in UserProperties to allow clean replacement.
+ * Deletes all existing eveningDigest triggers before creating a new one
+ * to avoid accumulation across repeated saves.
  */
 function setupUserTrigger_(hour) {
-  var props = PropertiesService.getUserProperties();
-  var existingId = props.getProperty('TRIGGER_ID');
-
-  // Delete the previous trigger if we have its ID
-  if (existingId) {
-    ScriptApp.getProjectTriggers().forEach(function(t) {
-      if (t.getUniqueId() === existingId) {
-        ScriptApp.deleteTrigger(t);
-      }
-    });
-  }
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'eveningDigest') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
 
   var trigger = ScriptApp.newTrigger('eveningDigest')
     .timeBased()
@@ -130,6 +125,6 @@ function setupUserTrigger_(hour) {
     .atHour(hour)
     .create();
 
-  props.setProperty('TRIGGER_ID', trigger.getUniqueId());
+  PropertiesService.getUserProperties().setProperty('TRIGGER_ID', trigger.getUniqueId());
   Logger.log('Trigger set: eveningDigest at hour ' + hour + ' UTC (trigger ID: ' + trigger.getUniqueId() + ')');
 }
