@@ -39,10 +39,11 @@ var PROMPT_TEMPLATE = [
  * If not set, fetches available models from the API and picks the best flash model.
  */
 function getModel_() {
-  var override = PropertiesService.getScriptProperties().getProperty('GEMINI_MODEL');
+  var userProps = PropertiesService.getUserProperties();
+  var override = userProps.getProperty('GEMINI_MODEL');
   if (override) return override;
 
-  var apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  var apiKey = userProps.getProperty('GEMINI_API_KEY');
   var response = UrlFetchApp.fetch(GEMINI_API_BASE + '?key=' + apiKey, { muteHttpExceptions: true });
   var models = JSON.parse(response.getContentText()).models || [];
 
@@ -84,8 +85,8 @@ function getModel_() {
  * @returns {string}
  */
 function callGemini_(prompt) {
-  var apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set in Script Properties.');
+  var apiKey = PropertiesService.getUserProperties().getProperty('GEMINI_API_KEY');
+  if (!apiKey) throw new Error('GEMINI_API_KEY not set. Open the Gmail Triage add-on panel to configure.');
 
   var model = getModel_();
   var url = GEMINI_API_BASE + '/' + model + ':generateContent?key=' + apiKey;
@@ -189,8 +190,8 @@ function analyzeEmails_(emails, batchSize) {
  * Run this manually to explore options.
  */
 function listGeminiModels() {
-  var apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set in Script Properties.');
+  var apiKey = PropertiesService.getUserProperties().getProperty('GEMINI_API_KEY');
+  if (!apiKey) throw new Error('GEMINI_API_KEY not set. Open the Gmail Triage add-on panel to configure.');
 
   var response = UrlFetchApp.fetch(
     'https://generativelanguage.googleapis.com/v1beta/models?key=' + apiKey,

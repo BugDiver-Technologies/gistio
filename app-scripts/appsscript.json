@@ -1,13 +1,21 @@
 {
-  "timeZone": "Asia/Kolkata",
   "runtimeVersion": "V8",
   "exceptionLogging": "STACKDRIVER",
   "oauthScopes": [
     "https://www.googleapis.com/auth/gmail.modify",
     "https://mail.google.com/",
     "https://www.googleapis.com/auth/script.external_request",
-    "https://www.googleapis.com/auth/script.send_mail",
     "https://www.googleapis.com/auth/script.scriptapp",
     "https://www.googleapis.com/auth/userinfo.email"
-  ]
+  ],
+  "addOns": {
+    "common": {
+      "name": "Gmail Triage",
+      "logoUrl": "https://www.gstatic.com/images/icons/material/system/2x/mail_black_48dp.png",
+      "homepageTrigger": {
+        "runFunction": "onHomepage"
+      }
+    },
+    "gmail": {}
+  }
 }
