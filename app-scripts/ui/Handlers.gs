@@ -76,11 +76,13 @@ function saveSettings_(e) {
   var hour  = fi['hour']      || DEFAULT_HOUR;
   var day   = fi['month_day'] || DEFAULT_DAY;
   var label = (fi['label'] || '').trim() || DEFAULT_LABEL;
+  var tzId  = (fi['tz_id']  || '').trim();
 
   props.setProperty('DIGEST_FREQ',  freq);
   props.setProperty('DIGEST_HOUR',  hour);
   props.setProperty('MONTH_DAY',    day);
   props.setProperty('DIGEST_LABEL', label);
+  if (tzId) props.setProperty('TZ_ID', tzId);
 
   setupUserTrigger_(freq, parseInt(hour, 10), parseInt(day, 10));
 

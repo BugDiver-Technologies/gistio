@@ -46,6 +46,7 @@ function configFromSaved_(saved) {
     hour:   saved['DIGEST_HOUR']  || DEFAULT_HOUR,
     day:    saved['MONTH_DAY']    || DEFAULT_DAY,
     label:  saved['DIGEST_LABEL'] || DEFAULT_LABEL,
+    tzId:   saved['TZ_ID']        || '',
   };
 }
 
@@ -57,6 +58,7 @@ function configFromForm_(e, saved) {
     hour:   fi['hour']      || saved['DIGEST_HOUR']  || DEFAULT_HOUR,
     day:    fi['month_day'] || saved['MONTH_DAY']    || DEFAULT_DAY,
     label:  fi['label']     || saved['DIGEST_LABEL'] || DEFAULT_LABEL,
+    tzId:   fi['tz_id']     || saved['TZ_ID']        || '',
   };
 }
 
@@ -134,6 +136,19 @@ function buildSettingsCard_(config) {
           .setTitle('Processed emails label')
           .setHint('Labelled emails are skipped on the next run')
           .setValue(config.label)
+      )
+  );
+
+  // Timezone
+  card.addSection(
+    CardService.newCardSection()
+      .setHeader('Timezone')
+      .addWidget(
+        CardService.newTextInput()
+          .setFieldName('tz_id')
+          .setTitle('Your timezone')
+          .setHint('IANA ID — e.g. Asia/Kolkata, America/New_York, Europe/London')
+          .setValue(config.tzId)
       )
   );
 
