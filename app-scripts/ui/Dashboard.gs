@@ -10,11 +10,6 @@ function buildDashboardCard_(saved) {
       CardService.newCardAction()
         .setText('Settings')
         .setOnClickAction(CardService.newAction().setFunctionName('openSettings_'))
-    )
-    .addCardAction(
-      CardService.newCardAction()
-        .setText('Refresh')
-        .setOnClickAction(CardService.newAction().setFunctionName('onHomepage'))
     );
 
   if (saved['DIGEST_RUNNING'] === 'true') {
@@ -40,7 +35,7 @@ function buildDashboardCard_(saved) {
     card.addSection(
       CardService.newCardSection()
         .addWidget(CardService.newDecoratedText()
-          .setText('Last Run  \u00b7  ' + timeStr + '  \u00b7  ' + processed + ' processed')
+          .setText('Last Run  \u00b7  ' + timeStr)
           .setButton(CardService.newImageButton()
             .setIconUrl('https://www.gstatic.com/images/icons/material/system/2x/refresh_googblue_48dp.png')
             .setAltText('Run digest now')

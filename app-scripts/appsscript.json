@@ -15,6 +15,10 @@
     "common": {
       "name": "Gistio",
       "logoUrl": "https://bugdiver.github.io/gistio/logo.svg",
+      "layoutProperties": {
+        "primaryColor": "#1A1F36",
+        "secondaryColor": "#3B82F6"
+      },
       "useLocaleFromApp": true,
       "homepageTrigger": {
         "runFunction": "onHomepage"
