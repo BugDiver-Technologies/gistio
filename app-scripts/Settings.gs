@@ -50,14 +50,16 @@ function onInstall(e) {
   return onHomepage(e);
 }
 
-function onHomepage(e) {
-  var props = PropertiesService.getUserProperties();
-
-  // Auto-capture user's timezone from the event object (updated on every load)
+function captureTimezone_(e, props) {
   if (e && e.commonEventObject && e.commonEventObject.timeZone) {
     props.setProperty('TZ_ID',     e.commonEventObject.timeZone.id);
     props.setProperty('TZ_OFFSET', String(e.commonEventObject.timeZone.offset));
   }
+}
+
+function onHomepage(e) {
+  var props = PropertiesService.getUserProperties();
+  captureTimezone_(e, props);
 
   var saved = props.getProperties();
 
@@ -282,6 +284,7 @@ function onFrequencyChange_(e) {
 function saveSettings_(e) {
   var fi = e.formInput;
   var props = PropertiesService.getUserProperties();
+  captureTimezone_(e, props);
   var saved = props.getProperties();
 
   var key = fi['gemini_api_key'];
@@ -314,6 +317,7 @@ function saveSettings_(e) {
 
 function runNow_(e) {
   var props = PropertiesService.getUserProperties();
+  captureTimezone_(e, props);
 
   var alreadyQueued = ScriptApp.getProjectTriggers().some(function(t) {
     return t.getHandlerFunction() === 'runDigestOnce_';
