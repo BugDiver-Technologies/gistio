@@ -106,9 +106,10 @@ function buildSettingsCard_(config) {
   FREQUENCIES.forEach(function(f) {
     freqSelect.addItem(f.label, f.value, f.value === config.freq);
   });
-  schedSection.addWidget(freqSelect);
 
-  if (config.freq !== 'hourly') {
+  if (config.freq === 'hourly') {
+    schedSection.addWidget(freqSelect);
+  } else {
     var hourSelect = CardService.newSelectionInput()
       .setType(CardService.SelectionInputType.DROPDOWN)
       .setFieldName('hour')
@@ -116,7 +117,17 @@ function buildSettingsCard_(config) {
     HOURS.forEach(function(h) {
       hourSelect.addItem(h.label, h.value, h.value === config.hour);
     });
-    schedSection.addWidget(hourSelect);
+
+    // Place Frequency and Time side by side
+    schedSection.addWidget(
+      CardService.newColumns()
+        .addColumn(CardService.newColumn()
+          .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
+          .addWidget(freqSelect))
+        .addColumn(CardService.newColumn()
+          .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
+          .addWidget(hourSelect))
+    );
   }
 
   if (config.freq === 'monthly') {
@@ -133,13 +144,6 @@ function buildSettingsCard_(config) {
   card.addSection(schedSection);
 
   // ── Email Processing ──────────────────────────────────────────────────────
-  var actionInput = CardService.newSelectionInput()
-    .setType(CardService.SelectionInputType.RADIO_BUTTON)
-    .setFieldName('action')
-    .setTitle('What to do with low-priority emails')
-    .addItem('Mark as read — keep in inbox',  'mark_read', config.action === 'mark_read')
-    .addItem('Archive — remove from inbox',   'archive',   config.action === 'archive');
-
   card.addSection(
     CardService.newCardSection()
       .setHeader('Email Processing')
@@ -148,7 +152,13 @@ function buildSettingsCard_(config) {
         .setTitle('Gmail label for processed threads')
         .setHint('Threads with this label are skipped on the next run')
         .setValue(config.label))
-      .addWidget(actionInput)
+      .addWidget(CardService.newDecoratedText()
+        .setText('Archive low-priority emails')
+        .setBottomLabel('Off: mark as read and keep in inbox')
+        .setSwitchControl(CardService.newSwitch()
+          .setFieldName('action')
+          .setValue('archive')
+          .setSelected(config.action === 'archive')))
   );
 
   // ── Save ──────────────────────────────────────────────────────────────────
