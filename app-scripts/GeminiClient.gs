@@ -84,11 +84,11 @@ function getModel_() {
  * @param {string} prompt
  * @returns {string}
  */
-function callGemini_(prompt) {
+function callGemini_(prompt, model) {
   var apiKey = PropertiesService.getUserProperties().getProperty('GEMINI_API_KEY');
   if (!apiKey) throw new Error('GEMINI_API_KEY not set. Open the Gmail Triage add-on panel to configure.');
 
-  var model = getModel_();
+  model = model || getModel_();
   var url = GEMINI_API_BASE + '/' + model + ':generateContent?key=' + apiKey;
 
   var payload = {
@@ -139,13 +139,14 @@ function formatEmailsForPrompt_(emails) {
 function analyzeEmails_(emails, batchSize) {
   batchSize = batchSize || 20;
   var results = [];
+  var model = getModel_();
 
   for (var i = 0; i < emails.length; i += batchSize) {
     var batch = emails.slice(i, i + batchSize);
-    Logger.log('Analyzing emails ' + (i + 1) + '–' + (i + batch.length) + ' with ' + getModel_() + '...');
+    Logger.log('Analyzing emails ' + (i + 1) + '–' + (i + batch.length) + ' with ' + model + '...');
 
     var prompt = PROMPT_TEMPLATE.replace('{emails}', formatEmailsForPrompt_(batch));
-    var response = callGemini_(prompt);
+    var response = callGemini_(prompt, model);
 
     // Extract JSON array from response
     var jsonMatch = response.match(/\[[\s\S]*?\]/);
