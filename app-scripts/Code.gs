@@ -10,6 +10,8 @@
 
 
 function runDigestOnce_() {
+  var lock = LockService.getUserLock();
+  if (!lock.tryLock(0)) return;
   try {
     eveningDigest();
   } finally {
@@ -19,6 +21,7 @@ function runDigestOnce_() {
         ScriptApp.deleteTrigger(t);
       }
     });
+    lock.releaseLock();
   }
 }
 

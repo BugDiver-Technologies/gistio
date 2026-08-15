@@ -72,15 +72,16 @@ function onHomepage(e) {
   var props = PropertiesService.getUserProperties();
   var saved = props.getProperties();
 
-  // Clear stale DIGEST_RUNNING flag if no runDigestOnce_ trigger exists
-  if (saved['DIGEST_RUNNING'] === 'true') {
-    var hasRunTrigger = ScriptApp.getProjectTriggers().some(function(t) {
-      return t.getHandlerFunction() === 'runDigestOnce_';
-    });
-    if (!hasRunTrigger) {
-      props.deleteProperty('DIGEST_RUNNING');
-      saved = props.getProperties();
-    }
+  // Sync DIGEST_RUNNING with actual trigger state
+  var hasRunTrigger = ScriptApp.getProjectTriggers().some(function(t) {
+    return t.getHandlerFunction() === 'runDigestOnce_';
+  });
+  if (hasRunTrigger && saved['DIGEST_RUNNING'] !== 'true') {
+    props.setProperty('DIGEST_RUNNING', 'true');
+    saved = props.getProperties();
+  } else if (!hasRunTrigger && saved['DIGEST_RUNNING'] === 'true') {
+    props.deleteProperty('DIGEST_RUNNING');
+    saved = props.getProperties();
   }
 
   return saved['GEMINI_API_KEY']
@@ -336,15 +337,21 @@ function saveSettings_(e) {
 
 function runNow_(e) {
   var props = PropertiesService.getUserProperties();
-  props.setProperty('DIGEST_RUNNING', 'true');
 
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === 'runDigestOnce_') ScriptApp.deleteTrigger(t);
+  var alreadyQueued = ScriptApp.getProjectTriggers().some(function(t) {
+    return t.getHandlerFunction() === 'runDigestOnce_';
   });
+  if (alreadyQueued) {
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification().setText('A run is already in progress.'))
+      .build();
+  }
+
+  props.setProperty('DIGEST_RUNNING', 'true');
 
   ScriptApp.newTrigger('runDigestOnce_')
     .timeBased()
-    .after(60 * 1000)
+    .at(new Date(Date.now() + 30 * 1000))
     .create();
 
   return CardService.newActionResponseBuilder()
