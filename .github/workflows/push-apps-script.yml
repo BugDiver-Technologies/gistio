@@ -17,9 +17,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install clasp
-        run: npm install -g @google/clasp
+        run: npm ci
 
       - name: Write clasp credentials
         run: echo '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
@@ -29,4 +30,4 @@ jobs:
           echo "{\"scriptId\":\"${{ secrets.CLASP_SCRIPT_ID }}\",\"rootDir\":\"app-scripts\"}" > .clasp.json
 
       - name: Push to Apps Script
-        run: clasp push --force
+        run: npm run push
