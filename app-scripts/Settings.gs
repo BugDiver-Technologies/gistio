@@ -85,52 +85,66 @@ function buildDashboardCard_(saved) {
     .setName('dashboard')
     .setHeader(CardService.newCardHeader()
       .setTitle('Gmail Triage')
-      .setSubtitle('Email digest powered by Gemini'));
-
-  // Last run summary
-  var lastRunSection = CardService.newCardSection().setHeader('Last Run');
-  if (saved['LAST_RUN_TIME']) {
-    var runDate = new Date(saved['LAST_RUN_TIME']);
-    lastRunSection.addWidget(
-      CardService.newDecoratedText()
-        .setTopLabel('Time')
-        .setText(runDate.toLocaleString())
+      .setSubtitle('Email digest powered by Gemini'))
+    .addCardAction(
+      CardService.newCardAction()
+        .setText('Settings')
+        .setOnClickAction(CardService.newAction().setFunctionName('openSettings_'))
     );
-    lastRunSection.addWidget(
-      CardService.newDecoratedText()
-        .setTopLabel('Emails')
-        .setText(
-          saved['LAST_RUN_PROCESSED'] + ' processed  \u00b7  ' +
-          saved['LAST_RUN_KEPT']      + ' kept unread  \u00b7  ' +
-          saved['LAST_RUN_CLEARED']   + ' cleared'
+
+  var isRunning = saved['DIGEST_RUNNING'] === 'true';
+
+  if (isRunning) {
+    card.addSection(
+      CardService.newCardSection()
+        .setHeader('Status')
+        .addWidget(CardService.newTextParagraph()
+          .setText('Digest is running in the background. This usually takes 1\u20132 minutes.'))
+        .addWidget(
+          CardService.newTextButton()
+            .setText('Refresh')
+            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+            .setOnClickAction(CardService.newAction().setFunctionName('refreshStatus_'))
         )
     );
   } else {
-    lastRunSection.addWidget(
-      CardService.newTextParagraph().setText('No runs yet. Click Run Digest Now to start.')
+    // Last run summary
+    var lastRunSection = CardService.newCardSection().setHeader('Last Run');
+    if (saved['LAST_RUN_TIME']) {
+      var runDate = new Date(saved['LAST_RUN_TIME']);
+      lastRunSection.addWidget(
+        CardService.newDecoratedText()
+          .setTopLabel('Time')
+          .setText(runDate.toLocaleString())
+      );
+      lastRunSection.addWidget(
+        CardService.newDecoratedText()
+          .setTopLabel('Emails')
+          .setText(
+            saved['LAST_RUN_PROCESSED'] + ' processed  \u00b7  ' +
+            saved['LAST_RUN_KEPT']      + ' kept unread  \u00b7  ' +
+            saved['LAST_RUN_CLEARED']   + ' cleared'
+          )
+      );
+    } else {
+      lastRunSection.addWidget(
+        CardService.newTextParagraph().setText('No runs yet. Click Run Digest Now to start.')
+      );
+    }
+    card.addSection(lastRunSection);
+
+    // Actions
+    card.addSection(
+      CardService.newCardSection()
+        .setHeader('Actions')
+        .addWidget(
+          CardService.newTextButton()
+            .setText('Run Digest Now')
+            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+            .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))
+        )
     );
   }
-  card.addSection(lastRunSection);
-
-  // Actions
-  card.addSection(
-    CardService.newCardSection()
-      .setHeader('Actions')
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(
-            CardService.newTextButton()
-              .setText('Run Digest Now')
-              .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-              .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))
-          )
-          .addButton(
-            CardService.newTextButton()
-              .setText('Edit Settings')
-              .setOnClickAction(CardService.newAction().setFunctionName('openSettings_'))
-          )
-      )
-  );
 
   return card.build();
 }
@@ -314,14 +328,27 @@ function saveSettings_(e) {
 }
 
 function runNow_(e) {
+  var props = PropertiesService.getUserProperties();
+  props.setProperty('DIGEST_RUNNING', 'true');
+
   ScriptApp.newTrigger('runDigestOnce_')
     .timeBased()
     .after(60 * 1000)
     .create();
 
   return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(props.getProperties())))
+    .build();
+}
+
+
+function refreshStatus_(e) {
+  var saved = PropertiesService.getUserProperties().getProperties();
+  var stillRunning = saved['DIGEST_RUNNING'] === 'true';
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(saved)))
     .setNotification(CardService.newNotification()
-      .setText('Digest queued — check your inbox in about a minute.'))
+      .setText(stillRunning ? 'Still running \u2014 try again in a moment.' : 'Done! Check your inbox.'))
     .build();
 }
 

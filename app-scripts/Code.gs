@@ -10,12 +10,16 @@
 
 
 function runDigestOnce_() {
-  eveningDigest();
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === 'runDigestOnce_') {
-      ScriptApp.deleteTrigger(t);
-    }
-  });
+  try {
+    eveningDigest();
+  } finally {
+    PropertiesService.getUserProperties().deleteProperty('DIGEST_RUNNING');
+    ScriptApp.getProjectTriggers().forEach(function(t) {
+      if (t.getHandlerFunction() === 'runDigestOnce_') {
+        ScriptApp.deleteTrigger(t);
+      }
+    });
+  }
 }
 
 
