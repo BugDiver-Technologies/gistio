@@ -8,23 +8,6 @@
  * All user config is stored in UserProperties.
  */
 
-var TIMEZONES = [
-  { label: 'UTC (UTC+0)',                 value: '0'    },
-  { label: 'US Eastern (UTC-5)',          value: '-300' },
-  { label: 'US Central (UTC-6)',          value: '-360' },
-  { label: 'US Mountain (UTC-7)',         value: '-420' },
-  { label: 'US Pacific (UTC-8)',          value: '-480' },
-  { label: 'Brazil - Sao Paulo (UTC-3)', value: '-180' },
-  { label: 'UK - London (UTC+0)',         value: '0'    },
-  { label: 'Central Europe (UTC+1)',      value: '60'   },
-  { label: 'Moscow (UTC+3)',              value: '180'  },
-  { label: 'Gulf - Dubai (UTC+4)',        value: '240'  },
-  { label: 'India (IST, UTC+5:30)',       value: '330'  },
-  { label: 'Indochina - Bangkok (UTC+7)', value: '420'  },
-  { label: 'Singapore / HK (UTC+8)',      value: '480'  },
-  { label: 'Japan - Tokyo (UTC+9)',       value: '540'  },
-  { label: 'Australia - Sydney (UTC+10)', value: '600'  },
-];
 
 var FREQUENCIES = [
   { label: 'Hourly',  value: 'hourly'  },
@@ -55,7 +38,6 @@ var DAYS = (function() {
 
 var DEFAULT_FREQ  = 'daily';
 var DEFAULT_HOUR  = '19';
-var DEFAULT_TZ    = '330';
 var DEFAULT_DAY   = '1';
 var DEFAULT_LABEL = 'digest/processed';
 
@@ -70,6 +52,13 @@ function onInstall(e) {
 
 function onHomepage(e) {
   var props = PropertiesService.getUserProperties();
+
+  // Auto-capture user's timezone from the event object (updated on every load)
+  if (e && e.commonEventObject && e.commonEventObject.timeZone) {
+    props.setProperty('TZ_ID',     e.commonEventObject.timeZone.id);
+    props.setProperty('TZ_OFFSET', String(e.commonEventObject.timeZone.offset));
+  }
+
   var saved = props.getProperties();
 
   // Sync DIGEST_RUNNING with actual trigger state
@@ -119,11 +108,12 @@ function buildDashboardCard_(saved) {
     // Last run summary
     var lastRunSection = CardService.newCardSection().setHeader('Last Run');
     if (saved['LAST_RUN_TIME']) {
-      var runDate = new Date(saved['LAST_RUN_TIME']);
+      var tzId = saved['TZ_ID'] || 'UTC';
+      var timeStr = Utilities.formatDate(new Date(saved['LAST_RUN_TIME']), tzId, 'MMM d, yyyy, h:mm:ss a');
       lastRunSection.addWidget(
         CardService.newDecoratedText()
           .setTopLabel('Time')
-          .setText(runDate.toLocaleString())
+          .setText(timeStr)
       );
       lastRunSection.addWidget(
         CardService.newDecoratedText()
@@ -167,7 +157,6 @@ function configFromSaved_(saved) {
     hasKey: !!saved['GEMINI_API_KEY'],
     freq:   saved['DIGEST_FREQ']  || DEFAULT_FREQ,
     hour:   saved['DIGEST_HOUR']  || DEFAULT_HOUR,
-    tz:     saved['TZ_OFFSET']    || DEFAULT_TZ,
     day:    saved['MONTH_DAY']    || DEFAULT_DAY,
     label:  saved['DIGEST_LABEL'] || DEFAULT_LABEL,
   };
@@ -179,7 +168,6 @@ function configFromForm_(e, saved) {
     hasKey: !!saved['GEMINI_API_KEY'],
     freq:   fi['freq']      || saved['DIGEST_FREQ']  || DEFAULT_FREQ,
     hour:   fi['hour']      || saved['DIGEST_HOUR']  || DEFAULT_HOUR,
-    tz:     fi['tz_offset'] || saved['TZ_OFFSET']    || DEFAULT_TZ,
     day:    fi['month_day'] || saved['MONTH_DAY']    || DEFAULT_DAY,
     label:  fi['label']     || saved['DIGEST_LABEL'] || DEFAULT_LABEL,
   };
@@ -229,15 +217,6 @@ function buildSettingsCard_(config) {
       hourSelect.addItem(h.label, h.value, h.value === config.hour);
     });
     schedSection.addWidget(hourSelect);
-
-    var tzSelect = CardService.newSelectionInput()
-      .setType(CardService.SelectionInputType.DROPDOWN)
-      .setFieldName('tz_offset')
-      .setTitle('Timezone');
-    TIMEZONES.forEach(function(tz) {
-      tzSelect.addItem(tz.label, tz.value, tz.value === config.tz);
-    });
-    schedSection.addWidget(tzSelect);
   }
 
   if (config.freq === 'monthly') {
@@ -316,17 +295,15 @@ function saveSettings_(e) {
 
   var freq  = fi['freq']      || DEFAULT_FREQ;
   var hour  = fi['hour']      || DEFAULT_HOUR;
-  var tz    = fi['tz_offset'] || DEFAULT_TZ;
   var day   = fi['month_day'] || DEFAULT_DAY;
   var label = (fi['label'] || '').trim() || DEFAULT_LABEL;
 
   props.setProperty('DIGEST_FREQ',  freq);
   props.setProperty('DIGEST_HOUR',  hour);
-  props.setProperty('TZ_OFFSET',    tz);
   props.setProperty('MONTH_DAY',    day);
   props.setProperty('DIGEST_LABEL', label);
 
-  setupUserTrigger_(freq, parseInt(hour, 10), parseInt(tz, 10), parseInt(day, 10));
+  setupUserTrigger_(freq, parseInt(hour, 10), parseInt(day, 10));
 
   var dashboard = buildDashboardCard_(props.getProperties());
   return CardService.newActionResponseBuilder()
@@ -365,12 +342,7 @@ function runNow_(e) {
 // Trigger management
 // ---------------------------------------------------------------------------
 
-function localToUtcHour_(localHour, utcOffsetMinutes) {
-  var utc = localHour - Math.round(utcOffsetMinutes / 60);
-  return ((utc % 24) + 24) % 24;
-}
-
-function setupUserTrigger_(freq, localHour, utcOffsetMinutes, monthDay) {
+function setupUserTrigger_(freq, localHour, monthDay) {
   ScriptApp.getProjectTriggers().forEach(function(t) {
     if (t.getHandlerFunction() === 'eveningDigest') {
       ScriptApp.deleteTrigger(t);
@@ -384,7 +356,8 @@ function setupUserTrigger_(freq, localHour, utcOffsetMinutes, monthDay) {
     trigger = builder.everyHours(1).create();
     Logger.log('Trigger set: eveningDigest every hour');
   } else {
-    var utcHour = localToUtcHour_(localHour, utcOffsetMinutes);
+    var tzOffset = parseInt(PropertiesService.getUserProperties().getProperty('TZ_OFFSET') || '0', 10);
+    var utcHour = ((localHour - Math.round(tzOffset / 60)) % 24 + 24) % 24;
     if (freq === 'monthly') {
       trigger = builder.onMonthDay(monthDay).atHour(utcHour).create();
       Logger.log('Trigger set: monthly on day ' + monthDay + ' at local hour ' + localHour + ' (UTC ' + utcHour + ')');

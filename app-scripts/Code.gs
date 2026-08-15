@@ -15,8 +15,7 @@ function runDigestOnce_() {
   try {
     eveningDigest();
   } finally {
-    // Clear flag in case eveningDigest threw before reaching the email send step
-    PropertiesService.getUserProperties().deleteProperty('DIGEST_RUNNING');
+    // eveningDigest's finally block clears DIGEST_RUNNING; no need to repeat here
     ScriptApp.getProjectTriggers().forEach(function(t) {
       if (t.getHandlerFunction() === 'runDigestOnce_') {
         ScriptApp.deleteTrigger(t);
@@ -80,53 +79,62 @@ function buildDigest_(processed) {
 
 
 function eveningDigest() {
-  Logger.log('Fetching unread emails...');
-  var emails = fetchUnreadEmails_(100);
+  var props = PropertiesService.getUserProperties();
 
-  if (emails.length === 0) {
-    Logger.log('No unread emails. All done.');
-    return;
+  // Set flag if not already set (runNow_ may have set it early for UI feedback)
+  if (props.getProperty('DIGEST_RUNNING') !== 'true') {
+    props.setProperty('DIGEST_RUNNING', 'true');
   }
 
-  Logger.log('Found ' + emails.length + ' unread emails. Sending to Gemini...');
+  try {
+    Logger.log('Fetching unread emails...');
+    var emails = fetchUnreadEmails_(100);
 
-  // Build a threadId → thread map so cleanup reuses fetched objects
-  var threadMap = {};
-  emails.forEach(function(e) { threadMap[e.threadId] = e.thread; });
+    if (emails.length === 0) {
+      Logger.log('No unread emails. All done.');
+      return;
+    }
 
-  var processed = analyzeEmails_(emails);
-  var kept = processed.filter(isKeptUnread_);
+    Logger.log('Found ' + emails.length + ' unread emails. Sending to Gemini...');
 
-  var digest = buildDigest_(processed);
+    // Build a threadId → thread map so cleanup reuses fetched objects
+    var threadMap = {};
+    emails.forEach(function(e) { threadMap[e.threadId] = e.thread; });
 
-  // Email the digest to yourself
-  var userEmail = Session.getActiveUser().getEmail();
-  var subject = 'Email Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: 'UTC' });
-  MailApp.sendEmail(userEmail, subject, digest);
-  Logger.log('Digest sent to ' + userEmail);
+    var processed = analyzeEmails_(emails);
+    var kept = processed.filter(isKeptUnread_);
 
-  // Update dashboard stats and mark run as complete as soon as email is sent
-  PropertiesService.getUserProperties().setProperties({
-    'LAST_RUN_TIME':      new Date().toISOString(),
-    'LAST_RUN_PROCESSED': String(processed.length),
-    'LAST_RUN_KEPT':      String(kept.length),
-    'LAST_RUN_CLEARED':   String(processed.length - kept.length),
-  });
-  PropertiesService.getUserProperties().deleteProperty('DIGEST_RUNNING');
+    // 1. Mark everything as read except important+high
+    var toMark = processed
+      .filter(function(e) { return !isKeptUnread_(e); })
+      .map(function(e) { return threadMap[e.threadId]; });
 
-  // Mark everything as read except important+high
-  var toMark = processed
-    .filter(function(e) { return !isKeptUnread_(e); })
-    .map(function(e) { return threadMap[e.threadId]; });
+    if (toMark.length > 0) {
+      Logger.log('Marking ' + toMark.length + ' threads as read...');
+      markThreadsAsRead_(toMark);
+      Logger.log('Done.');
+    }
 
-  if (toMark.length > 0) {
-    Logger.log('Marking ' + toMark.length + ' threads as read...');
-    markThreadsAsRead_(toMark);
-    Logger.log('Done.');
+    // 2. Label all processed threads so they're skipped on the next run
+    var allThreads = processed.map(function(e) { return threadMap[e.threadId]; });
+    applyLabelToThreads_(allThreads, getLabelName_());
+    Logger.log('Labelled ' + allThreads.length + ' threads as ' + getLabelName_() + '.');
+
+    // 3. Send the digest email (inbox is already cleaned up)
+    var digest = buildDigest_(processed);
+    var userEmail = Session.getActiveUser().getEmail();
+    var subject = 'Email Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: 'UTC' });
+    MailApp.sendEmail(userEmail, subject, digest);
+    Logger.log('Digest sent to ' + userEmail);
+
+    // 4. Save run stats
+    props.setProperties({
+      'LAST_RUN_TIME':      new Date().toISOString(),
+      'LAST_RUN_PROCESSED': String(processed.length),
+      'LAST_RUN_KEPT':      String(kept.length),
+      'LAST_RUN_CLEARED':   String(processed.length - kept.length),
+    });
+  } finally {
+    props.deleteProperty('DIGEST_RUNNING');
   }
-
-  // Label all processed threads so they're skipped on the next run
-  var allThreads = processed.map(function(e) { return threadMap[e.threadId]; });
-  applyLabelToThreads_(allThreads, getLabelName_());
-  Logger.log('Labelled ' + allThreads.length + ' threads as ' + getLabelName_() + '.');
 }
