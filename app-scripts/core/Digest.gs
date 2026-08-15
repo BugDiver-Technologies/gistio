@@ -18,7 +18,7 @@ function buildDigest_(processed, timezone) {
   var cleared = processed.filter(function(e) { return !isKeptUnread_(e); });
 
   var lines = [];
-  lines.push('EMAIL DIGEST  ' + now);
+  lines.push('GISTIO DIGEST  ' + now);
   lines.push('Total: ' + processed.length + '  |  Kept unread: ' + kept.length + '  |  Cleared: ' + cleared.length);
   lines.push('='.repeat(60));
 
@@ -118,7 +118,7 @@ function buildHtmlDigest_(processed, timezone) {
   // ── Header ─────────────────────────────────────────────────────────────────
   html.push(
     '<tr><td style="background:#202124;padding:24px 32px;">',
-    '<p style="margin:0;color:#ffffff;font-size:22px;font-weight:500;letter-spacing:.5px;">Email Digest</p>',
+    '<p style="margin:0;color:#ffffff;font-size:22px;font-weight:500;letter-spacing:.5px;">Gistio</p>',
     '<p style="margin:6px 0 0;color:#9aa0a6;font-size:13px;">' + escapeHtml_(now) + '</p>',
     '</td></tr>'
   );
@@ -214,7 +214,7 @@ function buildHtmlDigest_(processed, timezone) {
   // ── Footer ─────────────────────────────────────────────────────────────────
   html.push(
     '<tr><td style="padding:20px 32px;border-top:1px solid #e0e0e0;font-size:11px;color:#9aa0a6;text-align:center;">',
-    'Sent by Gmail Triage &nbsp;&middot;&nbsp; Powered by Gemini AI',
+    'Gistio &nbsp;&middot;&nbsp; Get the gist. Skip the noise.',
     '</td></tr>',
     '</table>',
     '</td></tr></table>',

@@ -73,7 +73,7 @@ function eveningDigest() {
     var plain     = buildDigest_(processed, timezone);
     var htmlBody  = buildHtmlDigest_(processed, timezone);
     var userEmail = Session.getActiveUser().getEmail();
-    var subject   = 'Email Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: timezone });
+    var subject   = 'Gistio Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: timezone });
     MailApp.sendEmail(userEmail, subject, plain, { htmlBody: htmlBody });
     Logger.log('Digest sent to ' + userEmail);
 

@@ -32,7 +32,7 @@ var DAYS = (function() {
 var DEFAULT_FREQ   = 'daily';
 var DEFAULT_HOUR   = '19';
 var DEFAULT_DAY    = '1';
-var DEFAULT_LABEL  = 'digest/processed';
+var DEFAULT_LABEL  = 'gistio/processed';
 var DEFAULT_ACTION = 'mark_read';
 
 
@@ -73,7 +73,7 @@ function buildSettingsCard_(config) {
     .setName('settings')
     .setHeader(CardService.newCardHeader()
       .setTitle('Settings')
-      .setSubtitle('Customize your email digest'));
+      .setSubtitle('Get the gist. Skip the noise.'));
 
   // ── Gemini AI ─────────────────────────────────────────────────────────────
   card.addSection(

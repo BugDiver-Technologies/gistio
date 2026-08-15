@@ -1,81 +1,146 @@
-# Gmail Triage
+# Gistio
 
-A Google Apps Script that runs every evening, classifies your unread emails using Gemini, sends you a digest, and marks low-priority emails as read.
+**Get the gist. Skip the noise.**
+
+Gistio is a Gmail Add-on that uses Gemini AI to triage your inbox on a schedule. It classifies every unread email, cleans up low-priority threads (mark as read or archive), and sends you a crisp digest — so you open Gmail to signal, not noise.
+
+---
 
 ## How it works
 
-1. Fetches up to 100 unread inbox emails
-2. Sends them to Gemini in batches for classification
-3. Emails you a digest grouped by category
-4. Marks everything as read except `important` + `high priority` emails
+1. **Fetch** — reads up to 100 unread inbox threads
+2. **Classify** — Gemini AI scores each thread by category and priority
+3. **Clean** — low-priority threads are marked as read or archived
+4. **Label** — processed threads get a `gistio/processed` label so they're skipped next run
+5. **Digest** — a styled summary email lands in your inbox: what needs attention, what was cleared
 
-### Categories
+Everything runs inside Google's infrastructure. Your emails never leave Google.
 
-| Category | Description |
-|----------|-------------|
-| important | Personal messages or anything requiring action |
-| transactional | Payment confirmations, receipts — already done |
-| promotional | Marketing, deals, discount offers |
-| newsletter | Subscribed digests |
-| announcement | Product updates, company announcements |
-| notification | OTPs, app pings, GitHub, CI alerts |
-| other | Everything else |
+---
+
+## Features
+
+- **AI triage** — Gemini classifies emails as important, transactional, promotional, newsletter, notification, or social, with high / medium / low priority
+- **Inbox cleanup** — mark low-priority threads as read, or archive them entirely
+- **Scheduled runs** — hourly, daily at your chosen time, or monthly on a set day
+- **Run on demand** — trigger a run instantly from the add-on panel
+- **HTML digest email** — color-coded by category, clickable thread links, "Needs attention" section for high-priority emails
+- **Privacy-first** — no external servers; runs entirely on Google Apps Script
+
+---
 
 ## Setup
 
-### 1. Prerequisites
+### 1. Get a Gemini API key
+
+Get a free key at [Google AI Studio](https://aistudio.google.com). The free tier is sufficient for personal use.
+
+### 2. Install the add-on
+
+> Public Marketplace listing coming soon. For now, deploy via your own Apps Script project (see [Development](#development)).
+
+### 3. Configure
+
+Open the Gistio panel in Gmail, enter your Gemini API key, set your preferred schedule and inbox action, then click **Save & Activate**.
+
+---
+
+## Configuration
+
+| Setting | Options | Default |
+|---|---|---|
+| Frequency | Hourly / Daily / Monthly | Daily |
+| Time | Any hour (your local time) | 7:00 PM |
+| Day of month | 1–28 | 1st |
+| Gmail label | Any label name | `gistio/processed` |
+| Inbox action | Mark as read / Archive | Mark as read |
+
+---
+
+## Triage logic
+
+| Category | Priority | Action |
+|---|---|---|
+| Important | High | **Kept unread** — appears in digest under "Needs Attention" |
+| Anything else | Any | Cleared (mark as read or archived per your setting) |
+
+Medium-priority cleared emails are flagged with a `MED` badge in the digest.
+
+---
+
+## Privacy
+
+- Runs entirely on **Google Apps Script** — no external servers, no third-party storage
+- Your Gemini API key is stored in **your personal Script Properties**, not shared with anyone
+- Email content (subject, sender, snippet) is sent to the **Gemini API** for classification
+- No analytics, no tracking, no ads
+
+---
+
+## Development
+
+### Prerequisites
 
 - [Node.js](https://nodejs.org)
-- A [Gemini API key](https://aistudio.google.com) (free tier works)
+- A Google account with Apps Script enabled
 
-### 2. Install and deploy
+### Local setup
 
 ```bash
+git clone https://github.com/your-username/gistio
+cd gistio
 npm install
-clasp login
-npm run create
-npm run push
+npx clasp login
 ```
 
-### 3. Set the API key
+Create `.clasp.json` in the root (gitignored):
 
-In the Apps Script editor: **Project Settings → Script Properties** → add:
+```json
+{
+  "scriptId": "YOUR_SCRIPT_ID",
+  "rootDir": "app-scripts"
+}
+```
 
-| Property | Value |
-|----------|-------|
-| `GEMINI_API_KEY` | your Gemini API key |
+### Deploy
 
-Optionally pin a model by adding `GEMINI_MODEL` (e.g. `gemini-2.0-flash`). If not set, the latest available flash model is picked automatically.
+```bash
+npm run push          # push to Apps Script (test immediately)
+git push origin main  # triggers CI deploy via GitHub Actions
+```
 
-### 4. Set up the daily trigger
-
-In the Apps Script editor, run `setupTrigger()`. This schedules the digest daily at ~7:30 PM IST. Only needs to be done once.
-
-### 5. Test
-
-Run `eveningDigest()` from the editor and check your inbox.
-
-## GitHub Actions (auto-deploy)
-
-Any push to `main` that changes files in `app-scripts/` automatically deploys to Apps Script.
-
-### Required repository secrets
-
-| Secret | Value |
-|--------|-------|
-| `CLASP_TOKEN` | Contents of `~/.clasprc.json` after `clasp login` |
-| `CLASP_SCRIPT_ID` | The `scriptId` from `.clasp.json` |
-
-## Project structure
+### Project structure
 
 ```
 app-scripts/
-  Code.gs          # Main digest logic
-  GeminiClient.gs  # Gemini API client and prompt
-  GmailHelper.gs   # Gmail fetch and mark-as-read
-  Setup.gs         # Trigger setup and config helpers
-  appsscript.json  # Apps Script manifest
+  core/
+    Digest.gs        — plain text + HTML digest builders
+    Pipeline.gs      — orchestration: fetch → classify → clean → label → send
+  integrations/
+    GeminiClient.gs  — Gemini API: model selection, batched email classification
+    GmailHelper.gs   — Gmail utilities: fetch, mark read, archive, label
+  ui/
+    Dashboard.gs     — add-on home card: last run stats, Run Now button
+    Handlers.gs      — entry points: onHomepage, saveSettings_, runNow_
+    SettingsCard.gs  — settings card builder and form config helpers
+    Triggers.gs      — time-based trigger setup and management
+  appsscript.json    — manifest: OAuth scopes, add-on config
 .github/
   workflows/
-    push-apps-script.yml  # Auto-deploy on push
+    push-apps-script.yml  — auto-deploy on push to main
 ```
+
+### GitHub Actions
+
+Pushing to `main` with changes under `app-scripts/**` automatically deploys via `clasp push`. Requires two repository secrets:
+
+| Secret | Value |
+|---|---|
+| `CLASP_TOKEN` | Contents of `~/.clasprc.json` after `clasp login` |
+| `CLASP_SCRIPT_ID` | The `scriptId` from `.clasp.json` |
+
+---
+
+## License
+
+MIT
