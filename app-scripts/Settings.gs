@@ -99,13 +99,7 @@ function buildDashboardCard_(saved) {
       CardService.newCardSection()
         .setHeader('Status')
         .addWidget(CardService.newTextParagraph()
-          .setText('Digest is running in the background. This usually takes 1\u20132 minutes.'))
-        .addWidget(
-          CardService.newTextButton()
-            .setText('Refresh')
-            .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-            .setOnClickAction(CardService.newAction().setFunctionName('refreshStatus_'))
-        )
+          .setText('Digest is running in the background. This usually takes 1\u20132 minutes. Use the refresh option in the menu to check when done.'))
     );
   } else {
     // Last run summary
@@ -341,16 +335,6 @@ function runNow_(e) {
     .build();
 }
 
-
-function refreshStatus_(e) {
-  var saved = PropertiesService.getUserProperties().getProperties();
-  var stillRunning = saved['DIGEST_RUNNING'] === 'true';
-  return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(saved)))
-    .setNotification(CardService.newNotification()
-      .setText(stillRunning ? 'Still running \u2014 try again in a moment.' : 'Done! Check your inbox.'))
-    .build();
-}
 
 
 // ---------------------------------------------------------------------------
