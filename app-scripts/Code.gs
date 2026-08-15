@@ -78,8 +78,8 @@ function eveningDigest() {
 
   // Email the digest to yourself
   var userEmail = Session.getActiveUser().getEmail();
-  var subject = 'Evening Email Digest — ' + new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
-  GmailApp.sendEmail(userEmail, subject, digest);
+  var subject = 'Email Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: 'UTC' });
+  MailApp.sendEmail(userEmail, subject, digest);
   Logger.log('Digest sent to ' + userEmail);
 
   // Mark everything as read except important+high
