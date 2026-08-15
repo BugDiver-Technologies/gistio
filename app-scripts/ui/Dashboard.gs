@@ -6,13 +6,15 @@
 function buildDashboardCard_(saved) {
   var card = CardService.newCardBuilder()
     .setName('dashboard')
-    .setHeader(CardService.newCardHeader()
-      .setTitle('Gmail Triage')
-      .setSubtitle('Email digest powered by Gemini'))
     .addCardAction(
       CardService.newCardAction()
         .setText('Settings')
         .setOnClickAction(CardService.newAction().setFunctionName('openSettings_'))
+    )
+    .addCardAction(
+      CardService.newCardAction()
+        .setText('Refresh')
+        .setOnClickAction(CardService.newAction().setFunctionName('onHomepage'))
     );
 
   if (saved['DIGEST_RUNNING'] === 'true') {
@@ -30,54 +32,33 @@ function buildDashboardCard_(saved) {
     var tzId    = saved['TZ_ID'] || 'UTC';
     var timeStr = Utilities.formatDate(new Date(saved['LAST_RUN_TIME']), tzId, 'MMM d, h:mm a');
 
-    var processed = saved['LAST_RUN_PROCESSED'] || '0';
-    var kept      = saved['LAST_RUN_KEPT']      || '0';
-    var cleared   = saved['LAST_RUN_CLEARED']   || '0';
-
-    var makeStatWidget = function(emoji, count, label) {
-      return CardService.newDecoratedText()
-        .setText(emoji + '  ' + count)
-        // Option B — always-visible label (uncomment to show permanently):
-        // .setBottomLabel(label)
-        .setOnClickAction(CardService.newAction()
-          .setFunctionName('showStatToast_')
-          .setParameters({ msg: count + ' ' + label }));
-    };
+    var processed   = saved['LAST_RUN_PROCESSED'] || '0';
+    var kept        = saved['LAST_RUN_KEPT']      || '0';
+    var cleared     = saved['LAST_RUN_CLEARED']   || '0';
+    var clearLabel  = saved['DIGEST_ACTION'] === 'archive' ? 'Archived' : 'Cleared';
 
     card.addSection(
       CardService.newCardSection()
-        .setHeader('Last Run  \u00b7  ' + timeStr)
-        .addWidget(
-          CardService.newColumns()
-            .addColumn(CardService.newColumn()
-              .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
-              .addWidget(makeStatWidget('\uD83D\uDFE2', processed, 'processed')))
-            .addColumn(CardService.newColumn()
-              .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
-              .addWidget(makeStatWidget('\uD83D\uDD35', kept, 'kept unread')))
-            .addColumn(CardService.newColumn()
-              .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
-              .addWidget(makeStatWidget('\uD83D\uDFE0', cleared, 'cleared')))
-        )
+        .addWidget(CardService.newDecoratedText()
+          .setText('Last Run  \u00b7  ' + timeStr + '  \u00b7  ' + processed + ' processed')
+          .setButton(CardService.newImageButton()
+            .setIconUrl('https://www.gstatic.com/images/icons/material/system/2x/refresh_googblue_48dp.png')
+            .setAltText('Run digest now')
+            .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))))
+        .addWidget(CardService.newTextParagraph()
+          .setText('\uD83D\uDD34 ' + kept + ' Needs attention\u2003\u2003\u26AB ' + cleared + ' ' + clearLabel))
     );
   } else {
     card.addSection(
       CardService.newCardSection()
-        .setHeader('Last Run')
-        .addWidget(CardService.newTextParagraph()
-          .setText('No runs yet. Click Run Digest Now to start.'))
+        .addWidget(CardService.newDecoratedText()
+          .setText('No runs yet')
+          .setButton(CardService.newImageButton()
+            .setIconUrl('https://www.gstatic.com/images/icons/material/system/2x/refresh_googblue_48dp.png')
+            .setAltText('Run digest now')
+            .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))))
     );
   }
-
-  card.addSection(
-    CardService.newCardSection()
-      .addWidget(
-        CardService.newTextButton()
-          .setText('Run Digest Now')
-          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-          .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))
-      )
-  );
 
   return card.build();
 }

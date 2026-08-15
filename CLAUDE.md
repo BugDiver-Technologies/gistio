@@ -2,11 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Deployment
+## Deployment workflow
 
-**Never run `clasp push` directly.** All deployments happen automatically via GitHub Actions when changes to `app-scripts/**` are pushed to `main`.
+1. Make code changes
+2. Run `npm run push` to deploy to Apps Script immediately (for testing)
+3. Ask the user if things work
+4. If confirmed, `git commit` then `git push` to main
 
-To deploy: commit your changes and push to `main`. The workflow at `.github/workflows/push-apps-script.yml` handles the rest using `CLASP_TOKEN` and `CLASP_SCRIPT_ID` secrets.
+GitHub Actions also auto-deploys on push to `main` (for `app-scripts/**` changes), but `npm run push` is used first for quick iteration.
 
 ## Architecture
 

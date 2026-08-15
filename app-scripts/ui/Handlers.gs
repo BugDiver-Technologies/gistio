@@ -87,7 +87,9 @@ function saveSettings_(e) {
   setupUserTrigger_(freq, parseInt(hour, 10), parseInt(day, 10));
 
   return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().popCard().pushCard(buildDashboardCard_(props.getProperties())))
+    .setNavigation(CardService.newNavigation()
+      .popToRoot()
+      .updateCard(buildDashboardCard_(props.getProperties())))
     .setNotification(CardService.newNotification().setText('Settings saved.'))
     .build();
 }
@@ -115,17 +117,6 @@ function runNow_(e) {
 
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(props.getProperties())))
-    .build();
-}
-
-
-// ---------------------------------------------------------------------------
-// Stat toast (dashboard click handler)
-// ---------------------------------------------------------------------------
-
-function showStatToast_(e) {
-  return CardService.newActionResponseBuilder()
-    .setNotification(CardService.newNotification().setText(e.parameters.msg))
     .build();
 }
 

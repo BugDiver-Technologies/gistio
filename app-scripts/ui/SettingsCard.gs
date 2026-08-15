@@ -106,10 +106,9 @@ function buildSettingsCard_(config) {
   FREQUENCIES.forEach(function(f) {
     freqSelect.addItem(f.label, f.value, f.value === config.freq);
   });
+  schedSection.addWidget(freqSelect);
 
-  if (config.freq === 'hourly') {
-    schedSection.addWidget(freqSelect);
-  } else {
+  if (config.freq !== 'hourly') {
     var hourSelect = CardService.newSelectionInput()
       .setType(CardService.SelectionInputType.DROPDOWN)
       .setFieldName('hour')
@@ -117,17 +116,7 @@ function buildSettingsCard_(config) {
     HOURS.forEach(function(h) {
       hourSelect.addItem(h.label, h.value, h.value === config.hour);
     });
-
-    // Place Frequency and Time side by side
-    schedSection.addWidget(
-      CardService.newColumns()
-        .addColumn(CardService.newColumn()
-          .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
-          .addWidget(freqSelect))
-        .addColumn(CardService.newColumn()
-          .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
-          .addWidget(hourSelect))
-    );
+    schedSection.addWidget(hourSelect);
   }
 
   if (config.freq === 'monthly') {
@@ -154,22 +143,19 @@ function buildSettingsCard_(config) {
         .setValue(config.label))
       .addWidget(CardService.newDecoratedText()
         .setText('Archive low-priority emails')
-        .setBottomLabel('Off: mark as read and keep in inbox')
+        .setBottomLabel('When on, removes emails from inbox instead of marking as read')
         .setSwitchControl(CardService.newSwitch()
           .setFieldName('action')
           .setValue('archive')
           .setSelected(config.action === 'archive')))
   );
 
-  // ── Save ──────────────────────────────────────────────────────────────────
-  card.addSection(
-    CardService.newCardSection()
-      .addWidget(
-        CardService.newTextButton()
-          .setText('Save & Activate')
-          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-          .setOnClickAction(CardService.newAction().setFunctionName('saveSettings_'))
-      )
+  card.setFixedFooter(
+    CardService.newFixedFooter()
+      .setPrimaryButton(CardService.newTextButton()
+        .setText('Save & Activate')
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setOnClickAction(CardService.newAction().setFunctionName('saveSettings_')))
   );
 
   return card.build();
