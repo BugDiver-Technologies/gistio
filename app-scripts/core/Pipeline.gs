@@ -63,11 +63,12 @@ function eveningDigest() {
     Logger.log('Labelled ' + allThreads.length + ' threads as ' + getLabelName_() + '.');
 
     // 3. Send digest (inbox already cleaned up)
-    var timezone = props.getProperty('TZ_ID') || 'UTC';
-    var digest   = buildDigest_(processed, timezone);
+    var timezone  = props.getProperty('TZ_ID') || 'UTC';
+    var plain     = buildDigest_(processed, timezone);
+    var htmlBody  = buildHtmlDigest_(processed, timezone);
     var userEmail = Session.getActiveUser().getEmail();
     var subject   = 'Email Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: timezone });
-    MailApp.sendEmail(userEmail, subject, digest);
+    MailApp.sendEmail(userEmail, subject, plain, { htmlBody: htmlBody });
     Logger.log('Digest sent to ' + userEmail);
 
     // 4. Save stats
