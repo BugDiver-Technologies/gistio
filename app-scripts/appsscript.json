@@ -8,12 +8,14 @@
     "https://www.googleapis.com/auth/script.external_request",
     "https://www.googleapis.com/auth/script.scriptapp",
     "https://www.googleapis.com/auth/script.send_mail",
-    "https://www.googleapis.com/auth/userinfo.email"
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/script.locale"
   ],
   "addOns": {
     "common": {
       "name": "Gmail Triage",
       "logoUrl": "https://www.gstatic.com/images/icons/material/system/2x/mail_black_48dp.png",
+      "useLocaleFromApp": true,
       "homepageTrigger": {
         "runFunction": "onHomepage"
       }
