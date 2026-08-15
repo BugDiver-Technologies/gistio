@@ -35,11 +35,12 @@
 
 ### Phase 1: Email UX (High Value, Medium Effort)
 
-**1. HTML Digest Email**
-- Replace plain text with styled HTML
-- Color-code by category and priority
-- Add clickable thread links (opens in Gmail directly)
-- Include unsubscribe/manage preferences link
+**1. HTML Digest Email** ✅
+- Styled HTML with dark header, stats bar, category colour-coded pills
+- Clickable thread links (`#all/THREADID`) for both kept and cleared emails
+- MED badge for medium-priority cleared items
+- Plain-text fallback retained for non-HTML clients
+- Timezone fix: `useLocaleFromApp: true` + `script.locale` scope populates `e.commonEventObject.timeZone`
 
 **2. Archive Option**
 - Add UI toggle in settings: "Mark as read" vs. "Archive"
