@@ -73,25 +73,30 @@ function buildSettingsCard_(config) {
     .setName('settings')
     .setHeader(CardService.newCardHeader()
       .setTitle('Settings')
-      .setSubtitle('Gmail Triage'));
+      .setSubtitle('Customize your email digest'));
 
-  // API key
+  // ── Gemini AI ─────────────────────────────────────────────────────────────
   card.addSection(
     CardService.newCardSection()
-      .setHeader('Gemini API Key')
+      .setHeader('Gemini AI')
+      .addWidget(CardService.newTextParagraph()
+        .setText(config.hasKey
+          ? '🔑 API key is saved. Enter a new value below to replace it.'
+          : 'A Gemini API key is required. Get yours free at Google AI Studio.'))
       .addWidget(
         CardService.newTextInput()
           .setFieldName('gemini_api_key')
           .setTitle('API Key')
-          .setHint(config.hasKey
-            ? 'Key saved — enter a new value to update'
-            : 'Required — get yours at aistudio.google.com')
+          .setHint('Stored securely in your personal script properties')
           .setValue('')
       )
   );
 
-  // Schedule
-  var schedSection = CardService.newCardSection().setHeader('Schedule');
+  // ── Schedule ──────────────────────────────────────────────────────────────
+  var schedSection = CardService.newCardSection()
+    .setHeader('Schedule')
+    .addWidget(CardService.newTextParagraph()
+      .setText('When should the digest run and clean your inbox?'));
 
   var freqSelect = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.DROPDOWN)
@@ -127,34 +132,26 @@ function buildSettingsCard_(config) {
 
   card.addSection(schedSection);
 
-  // Label
-  card.addSection(
-    CardService.newCardSection()
-      .setHeader('Label')
-      .addWidget(
-        CardService.newTextInput()
-          .setFieldName('label')
-          .setTitle('Processed emails label')
-          .setHint('Labelled emails are skipped on the next run')
-          .setValue(config.label)
-      )
-  );
-
-  // Action for low-priority emails
+  // ── Email Processing ──────────────────────────────────────────────────────
   var actionInput = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.RADIO_BUTTON)
     .setFieldName('action')
-    .setTitle('Action for low-priority emails')
-    .addItem('Mark as read',  'mark_read', config.action === 'mark_read')
-    .addItem('Archive',       'archive',   config.action === 'archive');
+    .setTitle('What to do with low-priority emails')
+    .addItem('Mark as read — keep in inbox',  'mark_read', config.action === 'mark_read')
+    .addItem('Archive — remove from inbox',   'archive',   config.action === 'archive');
 
   card.addSection(
     CardService.newCardSection()
-      .setHeader('Inbox Action')
+      .setHeader('Email Processing')
+      .addWidget(CardService.newTextInput()
+        .setFieldName('label')
+        .setTitle('Gmail label for processed threads')
+        .setHint('Threads with this label are skipped on the next run')
+        .setValue(config.label))
       .addWidget(actionInput)
   );
 
-  // Save
+  // ── Save ──────────────────────────────────────────────────────────────────
   card.addSection(
     CardService.newCardSection()
       .addWidget(
