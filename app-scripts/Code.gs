@@ -15,6 +15,7 @@ function runDigestOnce_() {
   try {
     eveningDigest();
   } finally {
+    // Clear flag in case eveningDigest threw before reaching the email send step
     PropertiesService.getUserProperties().deleteProperty('DIGEST_RUNNING');
     ScriptApp.getProjectTriggers().forEach(function(t) {
       if (t.getHandlerFunction() === 'runDigestOnce_') {
@@ -88,7 +89,13 @@ function eveningDigest() {
   }
 
   Logger.log('Found ' + emails.length + ' unread emails. Sending to Gemini...');
+
+  // Build a threadId → thread map so cleanup reuses fetched objects
+  var threadMap = {};
+  emails.forEach(function(e) { threadMap[e.threadId] = e.thread; });
+
   var processed = analyzeEmails_(emails);
+  var kept = processed.filter(isKeptUnread_);
 
   var digest = buildDigest_(processed);
 
@@ -98,10 +105,19 @@ function eveningDigest() {
   MailApp.sendEmail(userEmail, subject, digest);
   Logger.log('Digest sent to ' + userEmail);
 
+  // Update dashboard stats and mark run as complete as soon as email is sent
+  PropertiesService.getUserProperties().setProperties({
+    'LAST_RUN_TIME':      new Date().toISOString(),
+    'LAST_RUN_PROCESSED': String(processed.length),
+    'LAST_RUN_KEPT':      String(kept.length),
+    'LAST_RUN_CLEARED':   String(processed.length - kept.length),
+  });
+  PropertiesService.getUserProperties().deleteProperty('DIGEST_RUNNING');
+
   // Mark everything as read except important+high
   var toMark = processed
-    .filter(function (e) { return !isKeptUnread_(e); })
-    .map(function (e) { return e.threadId; });
+    .filter(function(e) { return !isKeptUnread_(e); })
+    .map(function(e) { return threadMap[e.threadId]; });
 
   if (toMark.length > 0) {
     Logger.log('Marking ' + toMark.length + ' threads as read...');
@@ -110,16 +126,7 @@ function eveningDigest() {
   }
 
   // Label all processed threads so they're skipped on the next run
-  var allThreadIds = processed.map(function(e) { return e.threadId; });
-  applyLabelToThreads_(allThreadIds, getLabelName_());
-  Logger.log('Labelled ' + allThreadIds.length + ' threads as ' + getLabelName_() + '.');
-
-  // Store last run stats for the add-on dashboard
-  var kept = processed.filter(isKeptUnread_);
-  PropertiesService.getUserProperties().setProperties({
-    'LAST_RUN_TIME':      new Date().toISOString(),
-    'LAST_RUN_PROCESSED': String(processed.length),
-    'LAST_RUN_KEPT':      String(kept.length),
-    'LAST_RUN_CLEARED':   String(processed.length - kept.length),
-  });
+  var allThreads = processed.map(function(e) { return threadMap[e.threadId]; });
+  applyLabelToThreads_(allThreads, getLabelName_());
+  Logger.log('Labelled ' + allThreads.length + ' threads as ' + getLabelName_() + '.');
 }

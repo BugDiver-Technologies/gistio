@@ -12,6 +12,7 @@ function fetchUnreadEmails_(maxResults) {
     const msg = thread.getMessages()[0];
     emails.push({
       threadId: thread.getId(),
+      thread:   thread,
       subject: msg.getSubject() || '(no subject)',
       from: msg.getFrom(),
       date: msg.getDate().toISOString(),
@@ -30,19 +31,15 @@ function getOrCreateLabel_(name) {
   return GmailApp.getUserLabelByName(name) || GmailApp.createLabel(name);
 }
 
-function applyLabelToThreads_(threadIds, labelName) {
+function applyLabelToThreads_(threads, labelName) {
   var label = getOrCreateLabel_(labelName);
-  threadIds.forEach(function(id) {
-    GmailApp.getThreadById(id).addLabel(label);
+  threads.forEach(function(thread) {
+    thread.addLabel(label);
   });
 }
 
-/**
- * Marks threads as read given a list of thread IDs.
- * @param {Array<string>} threadIds
- */
-function markThreadsAsRead_(threadIds) {
-  threadIds.forEach(function (id) {
-    GmailApp.getThreadById(id).markRead();
+function markThreadsAsRead_(threads) {
+  threads.forEach(function(thread) {
+    thread.markRead();
   });
 }
