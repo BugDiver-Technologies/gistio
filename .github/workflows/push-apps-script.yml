@@ -1,4 +1,4 @@
-name: Push to Google Apps Script
+name: Test and Deploy to Google Apps Script
 
 on:
   push:
@@ -6,11 +6,15 @@ on:
       - main
     paths:
       - 'app-scripts/**'
+      - 'tests/**'
+      - 'jest.config.js'
+      - 'package.json'
+      - 'package-lock.json'
 
 jobs:
-  push:
+  test:
+    name: Unit tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -19,15 +23,47 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install clasp
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    name: Push to Apps Script
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if app-scripts changed
+        id: check
+        run: |
+          git diff --name-only HEAD~1 HEAD | grep -q '^app-scripts/' \
+            && echo "deploy=true" >> "$GITHUB_OUTPUT" \
+            || echo "deploy=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.deploy == 'true'
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.check.outputs.deploy == 'true'
         run: npm ci
 
       - name: Write clasp credentials
+        if: steps.check.outputs.deploy == 'true'
         run: echo '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
 
       - name: Write .clasp.json
+        if: steps.check.outputs.deploy == 'true'
         run: |
           echo "{\"scriptId\":\"${{ secrets.CLASP_SCRIPT_ID }}\",\"rootDir\":\"app-scripts\"}" > .clasp.json
 
       - name: Push to Apps Script
+        if: steps.check.outputs.deploy == 'true'
         run: npm run push

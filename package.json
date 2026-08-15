@@ -9,9 +9,11 @@
     "push": "clasp push --force",
     "pull": "clasp pull",
     "open": "clasp open",
-    "logs": "clasp logs"
+    "logs": "clasp logs",
+    "test": "jest"
   },
   "devDependencies": {
-    "@google/clasp": "^2.4.2"
+    "@google/clasp": "^2.4.2",
+    "jest": "^29.0.0"
   }
 }
