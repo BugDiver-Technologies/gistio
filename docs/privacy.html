@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Gistio</title>
+  <meta name="description" content="Gistio Privacy Policy — how we handle your data.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #1A1F36;
+      line-height: 1.7;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1A1F36; }
+    .nav-brand img { width: 32px; height: 32px; }
+    .nav-brand span { font-size: 17px; font-weight: 600; }
+    .nav-brand span em { font-style: normal; color: #3B82F6; }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    .label {
+      font-size: 12px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: #3B82F6;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 36px; font-weight: 700; letter-spacing: -.8px;
+      line-height: 1.2; margin-bottom: 8px;
+    }
+
+    .updated {
+      font-size: 14px; color: #6B7280; margin-bottom: 48px;
+    }
+
+    h2 {
+      font-size: 18px; font-weight: 600;
+      margin: 40px 0 10px;
+    }
+
+    p { font-size: 15px; color: #374151; margin-bottom: 14px; }
+
+    ul {
+      margin: 8px 0 14px 20px;
+      font-size: 15px; color: #374151;
+    }
+    ul li { margin-bottom: 6px; }
+
+    .highlight {
+      background: #F0F9FF;
+      border-left: 3px solid #3B82F6;
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 24px 0;
+      font-size: 15px; color: #1A1F36;
+    }
+
+    a { color: #3B82F6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    footer {
+      padding: 24px 40px;
+      border-top: 1px solid #E5E7EB;
+      font-size: 13px; color: #6B7280;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    footer a { color: #6B7280; }
+    footer a:hover { color: #1A1F36; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-brand" href="index.html">
+      <img src="logo.svg" alt="Gistio">
+      <span>gist<em>io</em></span>
+    </a>
+  </nav>
+
+  <div class="container">
+    <p class="label">Legal</p>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: August 2026</p>
+
+    <div class="highlight">
+      Gistio runs entirely inside Google's infrastructure. Your emails are never stored on external servers and are never sold or shared with third parties beyond what is described in this policy.
+    </div>
+
+    <h2>1. What Gistio is</h2>
+    <p>Gistio is a Gmail Add-on built on Google Apps Script. It reads your unread inbox emails, classifies them using the Gemini AI API, cleans up low-priority threads, and sends you a digest summary email. All processing happens within Google's infrastructure under your Google account.</p>
+
+    <h2>2. What data Gistio accesses</h2>
+    <p>To function, Gistio requests the following Gmail permissions:</p>
+    <ul>
+      <li><strong>gmail.modify</strong> — to read inbox threads, mark emails as read, archive threads, and apply labels. This is the minimum scope required to clean your inbox.</li>
+      <li><strong>gmail.addons.execute</strong> — to run as a Gmail Add-on within the Gmail interface.</li>
+      <li><strong>script.send_mail</strong> — to send the digest summary email to your own address.</li>
+      <li><strong>userinfo.email</strong> — to identify your email address for sending the digest.</li>
+      <li><strong>script.scriptapp</strong> — to create and manage the scheduled digest trigger.</li>
+      <li><strong>script.locale</strong> — to display times in your local timezone.</li>
+    </ul>
+
+    <h2>3. What data is sent to Gemini AI</h2>
+    <p>For each unread email, the following fields are sent to the Gemini API for classification:</p>
+    <ul>
+      <li>Email subject</li>
+      <li>Sender name and address</li>
+      <li>A plain-text snippet (up to 600 characters of the message body)</li>
+    </ul>
+    <p>Full email bodies are <strong>not</strong> sent. Attachments are <strong>never</strong> accessed or sent. The Gemini API is used solely to classify emails by category and priority. Gemini's data handling is governed by <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</p>
+
+    <h2>4. What data Gistio stores</h2>
+    <p>Gistio stores a small amount of data in Google's UserProperties service (per-user, within your Google account):</p>
+    <ul>
+      <li>Your Gemini API key</li>
+      <li>Your digest schedule preferences (frequency, hour, day)</li>
+      <li>Your timezone</li>
+      <li>Last run statistics (count of emails processed, kept, cleared)</li>
+      <li>Subjects and thread IDs of emails that needed attention in the last run (displayed in the add-on panel)</li>
+      <li>Your preferred Gmail label name and inbox action</li>
+    </ul>
+    <p>This data is stored entirely within Google's infrastructure, accessible only to you and to Gistio's script running under your account. It is never transmitted to or stored on any external server.</p>
+
+    <h2>5. What data Gistio does NOT collect</h2>
+    <ul>
+      <li>No full email bodies are stored or transmitted beyond the 600-character snippet sent to Gemini</li>
+      <li>No analytics or usage tracking</li>
+      <li>No advertising or profiling</li>
+      <li>No data shared with or sold to third parties</li>
+      <li>No cookies or cross-site tracking</li>
+    </ul>
+
+    <h2>6. How to delete your data</h2>
+    <p>Removing the Gistio add-on from your Google account deletes all UserProperties data associated with it. You can remove the add-on at any time from <a href="https://workspace.google.com/products/gmail/" target="_blank">Gmail Settings → Add-ons</a> or from the Google Workspace Marketplace.</p>
+    <p>Any data previously sent to the Gemini API for classification is subject to Google's data retention policies.</p>
+
+    <h2>7. Open source</h2>
+    <p>Gistio is fully open source. You can inspect exactly what the add-on does at any time: <a href="https://github.com/BugDiver/gistio" target="_blank">github.com/BugDiver/gistio</a>.</p>
+
+    <h2>8. Changes to this policy</h2>
+    <p>If this policy changes materially, the "Last updated" date above will be updated. Continued use of Gistio after changes constitutes acceptance of the updated policy.</p>
+
+    <h2>9. Contact</h2>
+    <p>Questions about this privacy policy? Open an issue on <a href="https://github.com/BugDiver/gistio/issues" target="_blank">GitHub</a>.</p>
+  </div>
+
+  <footer>
+    <span>&copy; 2026 Gistio</span>
+    <div>
+      <a href="index.html">Home</a> &nbsp;·&nbsp;
+      <a href="https://github.com/BugDiver/gistio">GitHub</a>
+    </div>
+  </footer>
+
+</body>
+</html>
