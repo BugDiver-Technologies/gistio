@@ -47,14 +47,20 @@ function eveningDigest() {
     var processed = analyzeEmails_(emails);
     var kept      = processed.filter(isKeptUnread_);
 
-    // 1. Mark as read
-    var toMark = processed
+    // 1. Mark as read (or archive) low-priority threads
+    var toProcess = processed
       .filter(function(e) { return !isKeptUnread_(e); })
       .map(function(e) { return threadMap[e.threadId]; });
 
-    if (toMark.length > 0) {
-      Logger.log('Marking ' + toMark.length + ' threads as read...');
-      markThreadsAsRead_(toMark);
+    if (toProcess.length > 0) {
+      var action = props.getProperty('DIGEST_ACTION') || 'mark_read';
+      if (action === 'archive') {
+        Logger.log('Archiving ' + toProcess.length + ' threads...');
+        archiveThreads_(toProcess);
+      } else {
+        Logger.log('Marking ' + toProcess.length + ' threads as read...');
+        markThreadsAsRead_(toProcess);
+      }
     }
 
     // 2. Label

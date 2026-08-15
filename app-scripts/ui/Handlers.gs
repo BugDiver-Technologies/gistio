@@ -72,15 +72,17 @@ function saveSettings_(e) {
       .build();
   }
 
-  var freq  = fi['freq']      || DEFAULT_FREQ;
-  var hour  = fi['hour']      || DEFAULT_HOUR;
-  var day   = fi['month_day'] || DEFAULT_DAY;
-  var label = (fi['label'] || '').trim() || DEFAULT_LABEL;
+  var freq   = fi['freq']      || DEFAULT_FREQ;
+  var hour   = fi['hour']      || DEFAULT_HOUR;
+  var day    = fi['month_day'] || DEFAULT_DAY;
+  var label  = (fi['label'] || '').trim() || DEFAULT_LABEL;
+  var action = fi['action']    || DEFAULT_ACTION;
 
-  props.setProperty('DIGEST_FREQ',  freq);
-  props.setProperty('DIGEST_HOUR',  hour);
-  props.setProperty('MONTH_DAY',    day);
-  props.setProperty('DIGEST_LABEL', label);
+  props.setProperty('DIGEST_FREQ',   freq);
+  props.setProperty('DIGEST_HOUR',   hour);
+  props.setProperty('MONTH_DAY',     day);
+  props.setProperty('DIGEST_LABEL',  label);
+  props.setProperty('DIGEST_ACTION', action);
 
   setupUserTrigger_(freq, parseInt(hour, 10), parseInt(day, 10));
 

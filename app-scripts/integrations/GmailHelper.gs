@@ -43,3 +43,10 @@ function applyLabelToThreads_(threads, labelName) {
 function markThreadsAsRead_(threads) {
   threads.forEach(function(thread) { thread.markRead(); });
 }
+
+function archiveThreads_(threads) {
+  threads.forEach(function(thread) {
+    thread.markRead();
+    thread.moveToArchive();
+  });
+}

@@ -29,10 +29,11 @@ var DAYS = (function() {
   return d;
 })();
 
-var DEFAULT_FREQ  = 'daily';
-var DEFAULT_HOUR  = '19';
-var DEFAULT_DAY   = '1';
-var DEFAULT_LABEL = 'digest/processed';
+var DEFAULT_FREQ   = 'daily';
+var DEFAULT_HOUR   = '19';
+var DEFAULT_DAY    = '1';
+var DEFAULT_LABEL  = 'digest/processed';
+var DEFAULT_ACTION = 'mark_read';
 
 
 // ---------------------------------------------------------------------------
@@ -42,10 +43,11 @@ var DEFAULT_LABEL = 'digest/processed';
 function configFromSaved_(saved) {
   return {
     hasKey: !!saved['GEMINI_API_KEY'],
-    freq:   saved['DIGEST_FREQ']  || DEFAULT_FREQ,
-    hour:   saved['DIGEST_HOUR']  || DEFAULT_HOUR,
-    day:    saved['MONTH_DAY']    || DEFAULT_DAY,
-    label:  saved['DIGEST_LABEL'] || DEFAULT_LABEL,
+    freq:   saved['DIGEST_FREQ']   || DEFAULT_FREQ,
+    hour:   saved['DIGEST_HOUR']   || DEFAULT_HOUR,
+    day:    saved['MONTH_DAY']     || DEFAULT_DAY,
+    label:  saved['DIGEST_LABEL']  || DEFAULT_LABEL,
+    action: saved['DIGEST_ACTION'] || DEFAULT_ACTION,
   };
 }
 
@@ -53,10 +55,11 @@ function configFromForm_(e, saved) {
   var fi = e.formInput;
   return {
     hasKey: !!saved['GEMINI_API_KEY'],
-    freq:   fi['freq']      || saved['DIGEST_FREQ']  || DEFAULT_FREQ,
-    hour:   fi['hour']      || saved['DIGEST_HOUR']  || DEFAULT_HOUR,
-    day:    fi['month_day'] || saved['MONTH_DAY']    || DEFAULT_DAY,
-    label:  fi['label']     || saved['DIGEST_LABEL'] || DEFAULT_LABEL,
+    freq:   fi['freq']      || saved['DIGEST_FREQ']   || DEFAULT_FREQ,
+    hour:   fi['hour']      || saved['DIGEST_HOUR']   || DEFAULT_HOUR,
+    day:    fi['month_day'] || saved['MONTH_DAY']     || DEFAULT_DAY,
+    label:  fi['label']     || saved['DIGEST_LABEL']  || DEFAULT_LABEL,
+    action: fi['action']    || saved['DIGEST_ACTION'] || DEFAULT_ACTION,
   };
 }
 
@@ -135,6 +138,20 @@ function buildSettingsCard_(config) {
           .setHint('Labelled emails are skipped on the next run')
           .setValue(config.label)
       )
+  );
+
+  // Action for low-priority emails
+  var actionInput = CardService.newSelectionInput()
+    .setType(CardService.SelectionInputType.RADIO_BUTTON)
+    .setFieldName('action')
+    .setTitle('Action for low-priority emails')
+    .addItem('Mark as read',  'mark_read', config.action === 'mark_read')
+    .addItem('Archive',       'archive',   config.action === 'archive');
+
+  card.addSection(
+    CardService.newCardSection()
+      .setHeader('Inbox Action')
+      .addWidget(actionInput)
   );
 
   // Save
