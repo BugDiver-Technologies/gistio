@@ -7,7 +7,7 @@ describe('configFromSaved_', () => {
     expect(config.freq).toBe('daily');
     expect(config.hour).toBe('19');
     expect(config.day).toBe('1');
-    expect(config.label).toBe('digest/processed');
+    expect(config.label).toBe('gistio/processed');
   });
 
   test('reads saved values', () => {
@@ -38,7 +38,7 @@ describe('configFromForm_', () => {
     DIGEST_FREQ:    'daily',
     DIGEST_HOUR:    '19',
     MONTH_DAY:      '1',
-    DIGEST_LABEL:   'digest/processed',
+    DIGEST_LABEL:   'gistio/processed',
   };
 
   test('form values take precedence over saved', () => {
@@ -63,6 +63,6 @@ describe('configFromForm_', () => {
     expect(config.freq).toBe('daily');
     expect(config.hour).toBe('19');
     expect(config.day).toBe('1');
-    expect(config.label).toBe('digest/processed');
+    expect(config.label).toBe('gistio/processed');
   });
 });
