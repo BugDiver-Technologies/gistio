@@ -74,7 +74,6 @@ function eveningDigest() {
   var processed = analyzeEmails_(emails);
 
   var digest = buildDigest_(processed);
-  Logger.log(digest);
 
   // Email the digest to yourself
   var userEmail = Session.getActiveUser().getEmail();
