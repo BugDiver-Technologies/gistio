@@ -194,6 +194,20 @@ function buildSettingsCard_(config) {
       )
   );
 
+  // Run now (only shown when configured)
+  if (config.hasKey) {
+    card.addSection(
+      CardService.newCardSection()
+        .setHeader('Actions')
+        .addWidget(CardService.newTextParagraph().setText('Trigger a digest run immediately, outside your scheduled time.'))
+        .addWidget(
+          CardService.newTextButton()
+            .setText('Run Digest Now')
+            .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))
+        )
+    );
+  }
+
   return card.build();
 }
 
@@ -253,6 +267,20 @@ function saveSettings_(e) {
 function localToUtcHour_(localHour, utcOffsetMinutes) {
   var utc = localHour - Math.round(utcOffsetMinutes / 60);
   return ((utc % 24) + 24) % 24;
+}
+
+
+function runNow_(e) {
+  try {
+    eveningDigest();
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification().setText('Digest sent to your inbox.'))
+      .build();
+  } catch (err) {
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification().setText('Error: ' + err.message))
+      .build();
+  }
 }
 
 
