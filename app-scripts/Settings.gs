@@ -1,11 +1,11 @@
 /**
  * Settings card for the Gmail Triage add-on.
  *
- * Lets each user configure their Gemini API key, digest frequency, time,
- * timezone, and label name. All settings are stored in UserProperties.
+ * Two-card design:
+ *  - Dashboard card: shown when configured. Displays last run stats and actions.
+ *  - Settings card:  shown on first run, or when the user clicks "Edit Settings".
  *
- * Trigger times are stored and fired in UTC. The user picks a local time
- * and timezone; we convert to UTC when creating the trigger.
+ * All user config is stored in UserProperties.
  */
 
 var TIMEZONES = [
@@ -54,21 +54,91 @@ var DAYS = (function() {
 })();
 
 var DEFAULT_FREQ  = 'daily';
-var DEFAULT_HOUR  = '19';   // 7 PM local
-var DEFAULT_TZ    = '330';  // IST (UTC+5:30)
+var DEFAULT_HOUR  = '19';
+var DEFAULT_TZ    = '330';
 var DEFAULT_DAY   = '1';
 var DEFAULT_LABEL = 'digest/processed';
 
 
+// ---------------------------------------------------------------------------
+// Entry points
+// ---------------------------------------------------------------------------
+
 function onInstall(e) {
-  onHomepage(e);
+  return onHomepage(e);
 }
 
 function onHomepage(e) {
   var saved = PropertiesService.getUserProperties().getProperties();
-  return buildSettingsCard_(configFromSaved_(saved));
+  return saved['GEMINI_API_KEY']
+    ? buildDashboardCard_(saved)
+    : buildSettingsCard_(configFromSaved_(saved));
 }
 
+
+// ---------------------------------------------------------------------------
+// Dashboard card
+// ---------------------------------------------------------------------------
+
+function buildDashboardCard_(saved) {
+  var card = CardService.newCardBuilder()
+    .setName('dashboard')
+    .setHeader(CardService.newCardHeader()
+      .setTitle('Gmail Triage')
+      .setSubtitle('Email digest powered by Gemini'));
+
+  // Last run summary
+  var lastRunSection = CardService.newCardSection().setHeader('Last Run');
+  if (saved['LAST_RUN_TIME']) {
+    var runDate = new Date(saved['LAST_RUN_TIME']);
+    lastRunSection.addWidget(
+      CardService.newDecoratedText()
+        .setTopLabel('Time')
+        .setText(runDate.toLocaleString())
+    );
+    lastRunSection.addWidget(
+      CardService.newDecoratedText()
+        .setTopLabel('Emails')
+        .setText(
+          saved['LAST_RUN_PROCESSED'] + ' processed  \u00b7  ' +
+          saved['LAST_RUN_KEPT']      + ' kept unread  \u00b7  ' +
+          saved['LAST_RUN_CLEARED']   + ' cleared'
+        )
+    );
+  } else {
+    lastRunSection.addWidget(
+      CardService.newTextParagraph().setText('No runs yet. Click Run Digest Now to start.')
+    );
+  }
+  card.addSection(lastRunSection);
+
+  // Actions
+  card.addSection(
+    CardService.newCardSection()
+      .setHeader('Actions')
+      .addWidget(
+        CardService.newButtonSet()
+          .addButton(
+            CardService.newTextButton()
+              .setText('Run Digest Now')
+              .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+              .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))
+          )
+          .addButton(
+            CardService.newTextButton()
+              .setText('Edit Settings')
+              .setOnClickAction(CardService.newAction().setFunctionName('openSettings_'))
+          )
+      )
+  );
+
+  return card.build();
+}
+
+
+// ---------------------------------------------------------------------------
+// Settings card
+// ---------------------------------------------------------------------------
 
 function configFromSaved_(saved) {
   return {
@@ -93,22 +163,12 @@ function configFromForm_(e, saved) {
   };
 }
 
-
 function buildSettingsCard_(config) {
   var card = CardService.newCardBuilder()
     .setName('settings')
     .setHeader(CardService.newCardHeader()
-      .setTitle('Gmail Triage')
-      .setSubtitle('Daily email digest powered by Gemini'));
-
-  // Status banner
-  var statusText = config.hasKey
-    ? 'Active — digest scheduled. Update settings below.'
-    : 'Not configured — enter your Gemini API key to get started.';
-  card.addSection(
-    CardService.newCardSection()
-      .addWidget(CardService.newTextParagraph().setText(statusText))
-  );
+      .setTitle('Settings')
+      .setSubtitle('Gmail Triage'));
 
   // API key
   card.addSection(
@@ -184,38 +244,32 @@ function buildSettingsCard_(config) {
       )
   );
 
-  // Save button
+  // Save
   card.addSection(
     CardService.newCardSection()
       .addWidget(
         CardService.newTextButton()
-          .setText(config.hasKey ? 'Update Settings' : 'Save & Activate')
+          .setText('Save & Activate')
+          .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
           .setOnClickAction(CardService.newAction().setFunctionName('saveSettings_'))
       )
   );
-
-  // Run now (only shown when configured)
-  if (config.hasKey) {
-    card.addSection(
-      CardService.newCardSection()
-        .setHeader('Actions')
-        .addWidget(CardService.newTextParagraph().setText('Trigger a digest run immediately, outside your scheduled time.'))
-        .addWidget(
-          CardService.newTextButton()
-            .setText('Run Digest Now')
-            .setOnClickAction(CardService.newAction().setFunctionName('runNow_'))
-        )
-    );
-  }
 
   return card.build();
 }
 
 
-/**
- * Rebuilds the card when the user changes the frequency dropdown,
- * so time/timezone/day-of-month fields show or hide appropriately.
- */
+// ---------------------------------------------------------------------------
+// Callbacks
+// ---------------------------------------------------------------------------
+
+function openSettings_(e) {
+  var saved = PropertiesService.getUserProperties().getProperties();
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().pushCard(buildSettingsCard_(configFromSaved_(saved))))
+    .build();
+}
+
 function onFrequencyChange_(e) {
   var saved = PropertiesService.getUserProperties().getProperties();
   var config = configFromForm_(e, saved);
@@ -223,7 +277,6 @@ function onFrequencyChange_(e) {
     .setNavigation(CardService.newNavigation().updateCard(buildSettingsCard_(config)))
     .build();
 }
-
 
 function saveSettings_(e) {
   var fi = e.formInput;
@@ -253,28 +306,20 @@ function saveSettings_(e) {
 
   setupUserTrigger_(freq, parseInt(hour, 10), parseInt(tz, 10), parseInt(day, 10));
 
+  var dashboard = buildDashboardCard_(props.getProperties());
   return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().popCard().pushCard(dashboard))
     .setNotification(CardService.newNotification().setText('Settings saved.'))
-    .setStateChanged(true)
     .build();
 }
-
-
-/**
- * Converts a local hour + UTC offset (in minutes) to UTC hour for atHour().
- * Handles wraparound (e.g. UTC-8 at 1 AM → 9 AM UTC previous day → clamped).
- */
-function localToUtcHour_(localHour, utcOffsetMinutes) {
-  var utc = localHour - Math.round(utcOffsetMinutes / 60);
-  return ((utc % 24) + 24) % 24;
-}
-
 
 function runNow_(e) {
   try {
     eveningDigest();
+    var saved = PropertiesService.getUserProperties().getProperties();
     return CardService.newActionResponseBuilder()
       .setNotification(CardService.newNotification().setText('Digest sent to your inbox.'))
+      .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(saved)))
       .build();
   } catch (err) {
     return CardService.newActionResponseBuilder()
@@ -283,6 +328,15 @@ function runNow_(e) {
   }
 }
 
+
+// ---------------------------------------------------------------------------
+// Trigger management
+// ---------------------------------------------------------------------------
+
+function localToUtcHour_(localHour, utcOffsetMinutes) {
+  var utc = localHour - Math.round(utcOffsetMinutes / 60);
+  return ((utc % 24) + 24) % 24;
+}
 
 function setupUserTrigger_(freq, localHour, utcOffsetMinutes, monthDay) {
   ScriptApp.getProjectTriggers().forEach(function(t) {
@@ -301,10 +355,10 @@ function setupUserTrigger_(freq, localHour, utcOffsetMinutes, monthDay) {
     var utcHour = localToUtcHour_(localHour, utcOffsetMinutes);
     if (freq === 'monthly') {
       trigger = builder.onMonthDay(monthDay).atHour(utcHour).create();
-      Logger.log('Trigger set: eveningDigest monthly on day ' + monthDay + ' at local hour ' + localHour + ' (UTC ' + utcHour + ')');
+      Logger.log('Trigger set: monthly on day ' + monthDay + ' at local hour ' + localHour + ' (UTC ' + utcHour + ')');
     } else {
       trigger = builder.everyDays(1).atHour(utcHour).create();
-      Logger.log('Trigger set: eveningDigest daily at local hour ' + localHour + ' (UTC ' + utcHour + ')');
+      Logger.log('Trigger set: daily at local hour ' + localHour + ' (UTC ' + utcHour + ')');
     }
   }
 

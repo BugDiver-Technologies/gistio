@@ -97,4 +97,13 @@ function eveningDigest() {
   var allThreadIds = processed.map(function(e) { return e.threadId; });
   applyLabelToThreads_(allThreadIds, getLabelName_());
   Logger.log('Labelled ' + allThreadIds.length + ' threads as ' + getLabelName_() + '.');
+
+  // Store last run stats for the add-on dashboard
+  var kept = processed.filter(isKeptUnread_);
+  PropertiesService.getUserProperties().setProperties({
+    'LAST_RUN_TIME':      new Date().toISOString(),
+    'LAST_RUN_PROCESSED': String(processed.length),
+    'LAST_RUN_KEPT':      String(kept.length),
+    'LAST_RUN_CLEARED':   String(processed.length - kept.length),
+  });
 }
