@@ -77,12 +77,15 @@ function eveningDigest() {
     MailApp.sendEmail(userEmail, subject, plain, { htmlBody: htmlBody });
     Logger.log('Digest sent to ' + userEmail);
 
-    // 4. Save stats
+    // 4. Save stats + attention emails for dashboard
     props.setProperties({
       'LAST_RUN_TIME':      new Date().toISOString(),
       'LAST_RUN_PROCESSED': String(processed.length),
       'LAST_RUN_KEPT':      String(kept.length),
       'LAST_RUN_CLEARED':   String(processed.length - kept.length),
+      'LAST_RUN_ATTENTION': JSON.stringify(kept.slice(0, 10).map(function(e) {
+        return { subject: e.subject, threadId: e.threadId };
+      })),
     });
   } finally {
     props.deleteProperty('DIGEST_RUNNING');

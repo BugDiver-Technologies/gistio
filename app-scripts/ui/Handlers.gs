@@ -20,10 +20,14 @@ function onHomepage(e) {
 
   var saved = props.getProperties();
 
-  // Sync DIGEST_RUNNING with actual trigger state to recover from stale flags
-  var hasRunTrigger = ScriptApp.getProjectTriggers().some(function(t) {
+  // Purge excess runDigestOnce_ triggers — there should never be more than one
+  var runTriggers = ScriptApp.getProjectTriggers().filter(function(t) {
     return t.getHandlerFunction() === 'runDigestOnce_';
   });
+  runTriggers.slice(1).forEach(function(t) { ScriptApp.deleteTrigger(t); });
+  var hasRunTrigger = runTriggers.length > 0;
+
+  // Sync DIGEST_RUNNING with actual trigger state to recover from stale flags
   if (hasRunTrigger && saved['DIGEST_RUNNING'] !== 'true') {
     props.setProperty('DIGEST_RUNNING', 'true');
     saved = props.getProperties();
@@ -103,10 +107,12 @@ function runNow_(e) {
   var props = PropertiesService.getUserProperties();
   captureTimezone_(e, props);
 
-  var alreadyQueued = ScriptApp.getProjectTriggers().some(function(t) {
-    return t.getHandlerFunction() === 'runDigestOnce_';
+  // Purge any stale runDigestOnce_ triggers before checking state
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'runDigestOnce_') ScriptApp.deleteTrigger(t);
   });
-  if (alreadyQueued) {
+
+  if (props.getProperty('DIGEST_RUNNING') === 'true') {
     return CardService.newActionResponseBuilder()
       .setNotification(CardService.newNotification().setText('A run is already in progress.'))
       .build();
