@@ -325,6 +325,10 @@ function runNow_(e) {
   var props = PropertiesService.getUserProperties();
   props.setProperty('DIGEST_RUNNING', 'true');
 
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'runDigestOnce_') ScriptApp.deleteTrigger(t);
+  });
+
   ScriptApp.newTrigger('runDigestOnce_')
     .timeBased()
     .after(60 * 1000)
