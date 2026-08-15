@@ -14,7 +14,7 @@
   "addOns": {
     "common": {
       "name": "Gistio",
-      "logoUrl": "https://www.gstatic.com/images/icons/material/system/2x/mail_black_48dp.png",
+      "logoUrl": "https://bugdiver.github.io/gistio/logo.svg",
       "useLocaleFromApp": true,
       "homepageTrigger": {
         "runFunction": "onHomepage"

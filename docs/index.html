@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gistio — Get the gist. Skip the noise.</title>
+  <meta name="description" content="Gistio is a Gmail Add-on that uses AI to triage your inbox, clean up low-priority emails, and send you a crisp daily digest.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #1A1F36;
+      --blue:       #3B82F6;
+      --amber:      #F59E0B;
+      --emerald:    #10B981;
+      --parchment:  #F9FAFB;
+      --slate:      #6B7280;
+      --white:      #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand img { width: 36px; height: 36px; }
+    .nav-brand span { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -.3px; }
+    .nav-brand span em { font-style: normal; color: var(--blue); }
+    nav a.cta {
+      background: var(--ink); color: var(--white);
+      padding: 8px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 500; text-decoration: none;
+      transition: opacity .15s;
+    }
+    nav a.cta:hover { opacity: .8; }
+
+    /* ── Hero ── */
+    .hero {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+      padding: 100px 24px 80px;
+      background: linear-gradient(180deg, var(--parchment) 0%, var(--white) 100%);
+    }
+    .hero-logo { width: 88px; height: 88px; margin-bottom: 28px; }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 60px);
+      font-weight: 700; letter-spacing: -1.5px;
+      line-height: 1.1; max-width: 700px;
+    }
+    .hero h1 em { font-style: normal; color: var(--blue); }
+    .hero p {
+      margin-top: 20px;
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--slate); max-width: 520px;
+    }
+    .hero-actions { display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      background: var(--ink); color: var(--white);
+      padding: 14px 28px; border-radius: 10px;
+      font-size: 15px; font-weight: 600; text-decoration: none;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-secondary {
+      background: transparent; color: var(--ink);
+      padding: 14px 28px; border-radius: 10px;
+      font-size: 15px; font-weight: 500; text-decoration: none;
+      border: 1.5px solid #D1D5DB;
+      transition: border-color .15s;
+    }
+    .btn-secondary:hover { border-color: var(--ink); }
+    .badge {
+      margin-top: 16px;
+      font-size: 13px; color: var(--slate);
+    }
+
+    /* ── Section base ── */
+    section { padding: 80px 24px; }
+    .section-label {
+      font-size: 12px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--blue);
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 700; letter-spacing: -.8px;
+      line-height: 1.2; max-width: 560px;
+    }
+    .section-sub {
+      margin-top: 12px; font-size: 17px;
+      color: var(--slate); max-width: 480px;
+    }
+
+    /* ── How it works ── */
+    .how { background: var(--parchment); }
+    .how-inner { max-width: 960px; margin: 0 auto; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px; margin-top: 48px;
+    }
+    .step { display: flex; flex-direction: column; gap: 12px; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--ink); color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .step h3 { font-size: 17px; font-weight: 600; }
+    .step p { font-size: 15px; color: var(--slate); }
+
+    /* ── Features ── */
+    .features-inner { max-width: 960px; margin: 0 auto; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px; margin-top: 48px;
+    }
+    .feature-card {
+      padding: 24px; border-radius: 12px;
+      border: 1.5px solid #E5E7EB;
+      background: var(--white);
+    }
+    .feature-icon { font-size: 22px; margin-bottom: 10px; }
+    .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .feature-card p { font-size: 14px; color: var(--slate); }
+
+    /* ── Privacy ── */
+    .privacy {
+      background: var(--ink); color: var(--white);
+      text-align: center;
+    }
+    .privacy-inner { max-width: 640px; margin: 0 auto; }
+    .privacy h2 { color: var(--white); margin: 0 auto; }
+    .privacy .section-label { color: var(--blue); }
+    .privacy p { color: #9AA0A6; margin-top: 16px; font-size: 16px; }
+    .privacy-points {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center; margin-top: 32px;
+    }
+    .privacy-point {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 10px 18px; border-radius: 100px;
+      font-size: 14px; color: #D1D5DB;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 32px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+      border-top: 1px solid #E5E7EB;
+      font-size: 13px; color: var(--slate);
+    }
+    footer a { color: var(--slate); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+    .footer-links { display: flex; gap: 20px; }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a class="nav-brand" href="#">
+      <img src="logo.svg" alt="Gistio logo">
+      <span>gist<em>io</em></span>
+    </a>
+    <a class="cta" href="https://github.com/BugDiver/gistio">View on GitHub</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <img class="hero-logo" src="logo-light.svg" alt="Gistio">
+    <h1>Get the gist.<br><em>Skip the noise.</em></h1>
+    <p>Gistio is a Gmail Add-on that uses AI to triage your inbox, clear low-priority emails, and deliver a crisp digest — on your schedule.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="https://github.com/BugDiver/gistio">Get Early Access</a>
+      <a class="btn-secondary" href="#how-it-works">See how it works</a>
+    </div>
+    <p class="badge">Free &nbsp;·&nbsp; Runs inside Google &nbsp;·&nbsp; No data leaves your account</p>
+  </section>
+
+  <!-- How it works -->
+  <section class="how" id="how-it-works">
+    <div class="how-inner">
+      <p class="section-label">How it works</p>
+      <h2>Five steps. Zero inbox anxiety.</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Fetch</h3>
+          <p>Reads your unread inbox threads — up to 100 at a time.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Classify</h3>
+          <p>AI scores each thread by category and priority in seconds.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Clear</h3>
+          <p>Low-priority threads are marked as read or archived for you.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>Label</h3>
+          <p>Processed threads are labelled so they're skipped next run.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <h3>Digest</h3>
+          <p>A clean summary email lands in your inbox — what needs you, what was cleared.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section>
+    <div class="features-inner">
+      <p class="section-label">Features</p>
+      <h2>Everything you need. Nothing you don't.</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#9889;</div>
+          <h3>AI triage</h3>
+          <p>Every email classified by category and priority. High-priority threads stay unread so you never miss what matters.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#10003;</div>
+          <h3>Inbox cleanup</h3>
+          <p>Mark low-priority threads as read or archive them entirely. Your choice, your inbox.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128197;</div>
+          <h3>Flexible schedule</h3>
+          <p>Run hourly, daily at your chosen time, or monthly. Set it and forget it.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#9654;</div>
+          <h3>Run on demand</h3>
+          <p>Need it now? Trigger a digest run instantly from the Gmail sidebar.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128233;</div>
+          <h3>Styled digest email</h3>
+          <p>Color-coded by category, clickable thread links, and a clear "Needs Attention" section.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128274;</div>
+          <h3>Privacy-first</h3>
+          <p>No external servers. Everything runs inside Google Apps Script. Your data stays yours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section class="privacy">
+    <div class="privacy-inner">
+      <p class="section-label">Privacy</p>
+      <h2>Your emails never leave Google.</h2>
+      <p>Gistio runs entirely on Google Apps Script. Your API key is stored in your personal Script Properties. No tracking. No ads. No third-party servers.</p>
+      <div class="privacy-points">
+        <span class="privacy-point">No external servers</span>
+        <span class="privacy-point">API key stays with you</span>
+        <span class="privacy-point">No analytics</span>
+        <span class="privacy-point">Open source</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <span>&copy; 2026 Gistio &nbsp;·&nbsp; Get the gist. Skip the noise.</span>
+    <div class="footer-links">
+      <a href="https://github.com/BugDiver/gistio">GitHub</a>
+      <a href="https://github.com/BugDiver/gistio/blob/main/README.md">Docs</a>
+      <a href="https://github.com/BugDiver/gistio/blob/main/LICENSE">MIT License</a>
+    </div>
+  </footer>
+
+</body>
+</html>
