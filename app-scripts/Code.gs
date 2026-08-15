@@ -9,6 +9,16 @@
  */
 
 
+function runDigestOnce_() {
+  eveningDigest();
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'runDigestOnce_') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+}
+
+
 function isKeptUnread_(email) {
   return email.category === 'important' && email.priority === 'high';
 }

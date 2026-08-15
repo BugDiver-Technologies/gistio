@@ -314,18 +314,15 @@ function saveSettings_(e) {
 }
 
 function runNow_(e) {
-  try {
-    eveningDigest();
-    var saved = PropertiesService.getUserProperties().getProperties();
-    return CardService.newActionResponseBuilder()
-      .setNotification(CardService.newNotification().setText('Digest sent to your inbox.'))
-      .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(saved)))
-      .build();
-  } catch (err) {
-    return CardService.newActionResponseBuilder()
-      .setNotification(CardService.newNotification().setText('Error: ' + err.message))
-      .build();
-  }
+  ScriptApp.newTrigger('runDigestOnce_')
+    .timeBased()
+    .after(60 * 1000)
+    .create();
+
+  return CardService.newActionResponseBuilder()
+    .setNotification(CardService.newNotification()
+      .setText('Digest queued — check your inbox in about a minute.'))
+    .build();
 }
 
 
