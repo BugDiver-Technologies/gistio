@@ -120,6 +120,17 @@ function runNow_(e) {
 
 
 // ---------------------------------------------------------------------------
+// Stat toast (dashboard click handler)
+// ---------------------------------------------------------------------------
+
+function showStatToast_(e) {
+  return CardService.newActionResponseBuilder()
+    .setNotification(CardService.newNotification().setText(e.parameters.msg))
+    .build();
+}
+
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

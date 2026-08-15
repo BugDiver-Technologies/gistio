@@ -26,32 +26,51 @@ function buildDashboardCard_(saved) {
   }
 
   // Last run summary
-  var lastRunSection = CardService.newCardSection().setHeader('Last Run');
   if (saved['LAST_RUN_TIME']) {
     var tzId    = saved['TZ_ID'] || 'UTC';
-    var timeStr = Utilities.formatDate(new Date(saved['LAST_RUN_TIME']), tzId, 'MMM d, yyyy, h:mm:ss a');
-    lastRunSection.addWidget(
-      CardService.newDecoratedText().setTopLabel('Time').setText(timeStr)
-    );
-    lastRunSection.addWidget(
-      CardService.newDecoratedText()
-        .setTopLabel('Emails')
-        .setText(
-          saved['LAST_RUN_PROCESSED'] + ' processed  \u00b7  ' +
-          saved['LAST_RUN_KEPT']      + ' kept unread  \u00b7  ' +
-          saved['LAST_RUN_CLEARED']   + ' cleared'
+    var timeStr = Utilities.formatDate(new Date(saved['LAST_RUN_TIME']), tzId, 'MMM d, h:mm a');
+
+    var processed = saved['LAST_RUN_PROCESSED'] || '0';
+    var kept      = saved['LAST_RUN_KEPT']      || '0';
+    var cleared   = saved['LAST_RUN_CLEARED']   || '0';
+
+    var makeStatWidget = function(emoji, count, label) {
+      return CardService.newDecoratedText()
+        .setText(emoji + '  ' + count)
+        // Option B — always-visible label (uncomment to show permanently):
+        // .setBottomLabel(label)
+        .setOnClickAction(CardService.newAction()
+          .setFunctionName('showStatToast_')
+          .setParameters({ msg: count + ' ' + label }));
+    };
+
+    card.addSection(
+      CardService.newCardSection()
+        .setHeader('Last Run  \u00b7  ' + timeStr)
+        .addWidget(
+          CardService.newColumns()
+            .addColumn(CardService.newColumn()
+              .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
+              .addWidget(makeStatWidget('\uD83D\uDFE2', processed, 'processed')))
+            .addColumn(CardService.newColumn()
+              .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
+              .addWidget(makeStatWidget('\uD83D\uDD35', kept, 'kept unread')))
+            .addColumn(CardService.newColumn()
+              .setHorizontalSizeStyle(CardService.HorizontalSizeStyle.FILL_AVAILABLE_SPACE)
+              .addWidget(makeStatWidget('\uD83D\uDFE0', cleared, 'cleared')))
         )
     );
   } else {
-    lastRunSection.addWidget(
-      CardService.newTextParagraph().setText('No runs yet. Click Run Digest Now to start.')
+    card.addSection(
+      CardService.newCardSection()
+        .setHeader('Last Run')
+        .addWidget(CardService.newTextParagraph()
+          .setText('No runs yet. Click Run Digest Now to start.'))
     );
   }
-  card.addSection(lastRunSection);
 
   card.addSection(
     CardService.newCardSection()
-      .setHeader('Actions')
       .addWidget(
         CardService.newTextButton()
           .setText('Run Digest Now')
