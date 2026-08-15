@@ -69,7 +69,20 @@ function onInstall(e) {
 }
 
 function onHomepage(e) {
-  var saved = PropertiesService.getUserProperties().getProperties();
+  var props = PropertiesService.getUserProperties();
+  var saved = props.getProperties();
+
+  // Clear stale DIGEST_RUNNING flag if no runDigestOnce_ trigger exists
+  if (saved['DIGEST_RUNNING'] === 'true') {
+    var hasRunTrigger = ScriptApp.getProjectTriggers().some(function(t) {
+      return t.getHandlerFunction() === 'runDigestOnce_';
+    });
+    if (!hasRunTrigger) {
+      props.deleteProperty('DIGEST_RUNNING');
+      saved = props.getProperties();
+    }
+  }
+
   return saved['GEMINI_API_KEY']
     ? buildDashboardCard_(saved)
     : buildSettingsCard_(configFromSaved_(saved));
