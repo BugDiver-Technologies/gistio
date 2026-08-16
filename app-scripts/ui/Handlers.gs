@@ -20,13 +20,18 @@ function onHomepage(e) {
 
   var saved = props.getProperties();
 
-  // Purge runDigestOnce_ triggers: zero expected when idle, max one when running
-  var runTriggers = ScriptApp.getProjectTriggers().filter(function(t) {
-    return t.getHandlerFunction() === 'runDigestOnce_';
-  });
-  var isRunning = saved['DIGEST_RUNNING'] === 'true';
-  var toDelete  = isRunning ? runTriggers.slice(1) : runTriggers;
+  // Purge excess triggers on every homepage load to prevent quota exhaustion:
+  // - eveningDigest: keep at most 1
+  // - runDigestOnce_: keep at most 1 when running, 0 when idle
+  var allTriggers     = ScriptApp.getProjectTriggers();
+  var digestTriggers  = allTriggers.filter(function(t) { return t.getHandlerFunction() === 'eveningDigest'; });
+  var runTriggers     = allTriggers.filter(function(t) { return t.getHandlerFunction() === 'runDigestOnce_'; });
+  var isRunning       = saved['DIGEST_RUNNING'] === 'true';
+
+  digestTriggers.slice(1).forEach(function(t) { ScriptApp.deleteTrigger(t); });
+  var toDelete = isRunning ? runTriggers.slice(1) : runTriggers;
   toDelete.forEach(function(t) { ScriptApp.deleteTrigger(t); });
+
   var hasRunTrigger = runTriggers.length > 0;
 
   // Sync DIGEST_RUNNING with actual trigger state to recover from stale flags
