@@ -71,9 +71,9 @@ function eveningDigest() {
     // 3. Send digest (inbox already cleaned up)
     var timezone  = props.getProperty('TZ_ID') || 'UTC';
     var plain     = buildDigest_(processed, timezone);
-    var htmlBody  = buildHtmlDigest_(processed, timezone);
+    var htmlBody  = buildHtmlDigest_(processed);
     var userEmail = Session.getActiveUser().getEmail();
-    var subject   = 'Gistio Digest — ' + new Date().toLocaleDateString('en-US', { timeZone: timezone });
+    var subject   = digestSubject_(kept.length);
     MailApp.sendEmail(userEmail, subject, plain, { htmlBody: htmlBody });
     Logger.log('Digest sent to ' + userEmail);
 

@@ -14,11 +14,7 @@
   "addOns": {
     "common": {
       "name": "Gistio",
-      "logoUrl": "https://bugdiver.github.io/gistio/logo.svg",
-      "layoutProperties": {
-        "primaryColor": "#1A1F36",
-        "secondaryColor": "#3B82F6"
-      },
+      "logoUrl": "https://bugdiver-technologies.github.io/gistio/icon-128.png",
       "useLocaleFromApp": true,
       "homepageTrigger": {
         "runFunction": "onHomepage"
