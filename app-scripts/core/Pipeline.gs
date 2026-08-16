@@ -32,7 +32,7 @@ function eveningDigest() {
 
   try {
     Logger.log('Fetching unread emails...');
-    var emails = fetchUnreadEmails_(100);
+    var emails = fetchUnreadEmails_(20);
 
     if (emails.length === 0) {
       Logger.log('No unread emails. All done.');

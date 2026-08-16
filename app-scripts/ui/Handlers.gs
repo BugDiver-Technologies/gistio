@@ -18,31 +18,13 @@ function onHomepage(e) {
   var props = PropertiesService.getUserProperties();
   captureTimezone_(e, props);
 
+  // Purge excess eveningDigest triggers (keep at most 1)
+  ScriptApp.getProjectTriggers()
+    .filter(function(t) { return t.getHandlerFunction() === 'eveningDigest'; })
+    .slice(1)
+    .forEach(function(t) { ScriptApp.deleteTrigger(t); });
+
   var saved = props.getProperties();
-
-  // Purge excess triggers on every homepage load to prevent quota exhaustion:
-  // - eveningDigest: keep at most 1
-  // - runDigestOnce_: keep at most 1 when running, 0 when idle
-  var allTriggers     = ScriptApp.getProjectTriggers();
-  var digestTriggers  = allTriggers.filter(function(t) { return t.getHandlerFunction() === 'eveningDigest'; });
-  var runTriggers     = allTriggers.filter(function(t) { return t.getHandlerFunction() === 'runDigestOnce_'; });
-  var isRunning       = saved['DIGEST_RUNNING'] === 'true';
-
-  digestTriggers.slice(1).forEach(function(t) { ScriptApp.deleteTrigger(t); });
-  var toDelete = isRunning ? runTriggers.slice(1) : runTriggers;
-  toDelete.forEach(function(t) { ScriptApp.deleteTrigger(t); });
-
-  var hasRunTrigger = runTriggers.length > 0;
-
-  // Sync DIGEST_RUNNING with actual trigger state to recover from stale flags
-  if (hasRunTrigger && saved['DIGEST_RUNNING'] !== 'true') {
-    props.setProperty('DIGEST_RUNNING', 'true');
-    saved = props.getProperties();
-  } else if (!hasRunTrigger && saved['DIGEST_RUNNING'] === 'true') {
-    props.deleteProperty('DIGEST_RUNNING');
-    saved = props.getProperties();
-  }
-
   return saved['GEMINI_API_KEY']
     ? buildDashboardCard_(saved)
     : buildSettingsCard_(configFromSaved_(saved));
@@ -114,29 +96,23 @@ function runNow_(e) {
   var props = PropertiesService.getUserProperties();
   captureTimezone_(e, props);
 
-  // Purge any stale runDigestOnce_ triggers before checking state
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === 'runDigestOnce_') ScriptApp.deleteTrigger(t);
-  });
-
   if (props.getProperty('DIGEST_RUNNING') === 'true') {
     return CardService.newActionResponseBuilder()
       .setNotification(CardService.newNotification().setText('A run is already in progress.'))
       .build();
   }
 
-  props.setProperty('DIGEST_RUNNING', 'true');
   try {
-    ScriptApp.newTrigger('runDigestOnce_').timeBased().at(new Date(Date.now() + 30 * 1000)).create();
+    eveningDigest();
   } catch (err) {
-    props.deleteProperty('DIGEST_RUNNING');
     return CardService.newActionResponseBuilder()
-      .setNotification(CardService.newNotification().setText('Failed to schedule run: ' + err.message))
+      .setNotification(CardService.newNotification().setText('Run failed: ' + err.message))
       .build();
   }
 
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(props.getProperties())))
+    .setNotification(CardService.newNotification().setText('Digest complete.'))
     .build();
 }
 
