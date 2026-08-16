@@ -1,11 +1,11 @@
 {
-  "name": "email-digest-apps-script",
-  "version": "1.0.0",
+  "name": "gistio",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "clasp": "clasp",
     "login": "clasp login",
-    "create": "clasp create --type standalone --title 'Evening Email Digest' --rootDir app-scripts",
+    "create": "clasp create --type standalone --title 'Gistio' --rootDir app-scripts",
     "push": "clasp push --force",
     "pull": "clasp pull",
     "open": "clasp open",
