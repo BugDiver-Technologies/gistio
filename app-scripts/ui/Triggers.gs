@@ -29,3 +29,13 @@ function setupUserTrigger_(freq, localHour, monthDay) {
 
   PropertiesService.getUserProperties().setProperty('TRIGGER_ID', trigger.getUniqueId());
 }
+
+/**
+ * Emergency utility — run manually from the Apps Script editor.
+ * Deletes every time-based trigger and clears the DIGEST_RUNNING flag.
+ */
+function clearAllTriggers() {
+  ScriptApp.getProjectTriggers().forEach(function(t) { ScriptApp.deleteTrigger(t); });
+  PropertiesService.getUserProperties().deleteProperty('DIGEST_RUNNING');
+  Logger.log('All triggers cleared.');
+}
