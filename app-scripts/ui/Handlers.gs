@@ -119,7 +119,14 @@ function runNow_(e) {
   }
 
   props.setProperty('DIGEST_RUNNING', 'true');
-  ScriptApp.newTrigger('runDigestOnce_').timeBased().at(new Date(Date.now() + 30 * 1000)).create();
+  try {
+    ScriptApp.newTrigger('runDigestOnce_').timeBased().at(new Date(Date.now() + 30 * 1000)).create();
+  } catch (err) {
+    props.deleteProperty('DIGEST_RUNNING');
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification().setText('Failed to schedule run: ' + err.message))
+      .build();
+  }
 
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(props.getProperties())))
