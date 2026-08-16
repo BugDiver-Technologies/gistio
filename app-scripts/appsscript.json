@@ -11,6 +11,9 @@
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/script.locale"
   ],
+  "urlFetchWhitelist": [
+    "https://generativelanguage.googleapis.com/"
+  ],
   "addOns": {
     "common": {
       "name": "Gistio",
