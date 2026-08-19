@@ -23,28 +23,32 @@ function runDigestOnce_() {
 }
 
 function eveningDigest() {
-  var props = PropertiesService.getUserProperties();
+  var props   = PropertiesService.getUserProperties();
+  var runId   = Utilities.getUuid().substring(0, 8);
+  var userKey = Session.getTemporaryActiveUserKey().substring(0, 6);
+  var prefix  = '[user:' + userKey + '] [run:' + runId + '] ';
 
-  // Set flag if not already set (runNow_ may have set it early for UI feedback)
   if (props.getProperty('DIGEST_RUNNING') !== 'true') {
     props.setProperty('DIGEST_RUNNING', 'true');
   }
+  props.deleteProperty('LAST_RUN_ERROR');
+  props.deleteProperty('LAST_RUN_REF');
 
   try {
-    Logger.log('Fetching unread emails...');
+    console.log(prefix + 'Digest started');
     var emails = fetchUnreadEmails_(20);
 
     if (emails.length === 0) {
-      Logger.log('No unread emails. All done.');
+      console.log(prefix + 'No unread emails');
       return;
     }
 
-    Logger.log('Found ' + emails.length + ' unread emails. Sending to Gemini...');
+    console.log(prefix + 'Fetched ' + emails.length + ' emails');
 
     var threadMap = {};
     emails.forEach(function(e) { threadMap[e.threadId] = e.thread; });
 
-    var processed = analyzeEmails_(emails);
+    var processed = analyzeEmails_(emails, runId);
     var kept      = processed.filter(isKeptUnread_);
 
     // 1. Mark as read (or archive) low-priority threads
@@ -55,27 +59,26 @@ function eveningDigest() {
     if (toProcess.length > 0) {
       var action = props.getProperty('DIGEST_ACTION') || 'mark_read';
       if (action === 'archive') {
-        Logger.log('Archiving ' + toProcess.length + ' threads...');
         archiveThreads_(toProcess);
+        console.log(prefix + 'Archived ' + toProcess.length + ' threads');
       } else {
-        Logger.log('Marking ' + toProcess.length + ' threads as read...');
         markThreadsAsRead_(toProcess);
+        console.log(prefix + 'Marked ' + toProcess.length + ' threads as read');
       }
     }
 
     // 2. Label
     var allThreads = processed.map(function(e) { return threadMap[e.threadId]; });
     applyLabelToThreads_(allThreads, getLabelName_());
-    Logger.log('Labelled ' + allThreads.length + ' threads as ' + getLabelName_() + '.');
+    console.log(prefix + 'Labelled ' + allThreads.length + ' threads');
 
     // 3. Send digest (inbox already cleaned up)
     var timezone  = props.getProperty('TZ_ID') || 'UTC';
     var plain     = buildDigest_(processed, timezone);
     var htmlBody  = buildHtmlDigest_(processed);
     var userEmail = Session.getActiveUser().getEmail();
-    var subject   = digestSubject_(kept.length);
-    MailApp.sendEmail(userEmail, subject, plain, { htmlBody: htmlBody });
-    Logger.log('Digest sent to ' + userEmail);
+    MailApp.sendEmail(userEmail, digestSubject_(kept.length), plain, { htmlBody: htmlBody });
+    console.log(prefix + 'Digest sent');
 
     // 4. Save stats + attention emails for dashboard
     props.setProperties({
@@ -87,6 +90,12 @@ function eveningDigest() {
         return { subject: e.subject, threadId: e.threadId };
       })),
     });
+    console.log(prefix + 'Done');
+  } catch (err) {
+    console.error(prefix + 'Error: ' + err.message);
+    props.setProperty('LAST_RUN_ERROR', err.message);
+    props.setProperty('LAST_RUN_REF',   'run:' + runId + '  user:' + userKey);
+    throw err;
   } finally {
     props.deleteProperty('DIGEST_RUNNING');
   }

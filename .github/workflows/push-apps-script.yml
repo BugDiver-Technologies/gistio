@@ -67,3 +67,11 @@ jobs:
       - name: Push to Apps Script
         if: steps.check.outputs.deploy == 'true'
         run: npm run push
+
+      - name: Cut versioned deployment (for Marketplace testers)
+        if: steps.check.outputs.deploy == 'true'
+        run: |
+          DEPLOYMENT_ID=$(node -e "console.log(require('./clasp.config.json').deploymentId)")
+          clasp deploy \
+            --deploymentId "$DEPLOYMENT_ID" \
+            --description "$(git log -1 --pretty='%s')"

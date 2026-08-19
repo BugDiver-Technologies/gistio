@@ -22,6 +22,20 @@ function buildDashboardCard_(saved) {
     return card.build();
   }
 
+  if (saved['LAST_RUN_ERROR']) {
+    var errorSection = CardService.newCardSection()
+      .setHeader('⚠️ Last Run Failed')
+      .addWidget(CardService.newTextParagraph()
+        .setText(saved['LAST_RUN_ERROR']));
+    if (saved['LAST_RUN_REF']) {
+      errorSection
+        .addWidget(CardService.newDecoratedText()
+          .setText(saved['LAST_RUN_REF'])
+          .setBottomLabel('Share this reference with support to diagnose the issue'));
+    }
+    card.addSection(errorSection);
+  }
+
   // Last run summary
   if (saved['LAST_RUN_TIME']) {
     var tzId    = saved['TZ_ID'] || 'UTC';

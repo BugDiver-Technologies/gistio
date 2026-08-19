@@ -7,6 +7,7 @@
     "login": "clasp login",
     "create": "clasp create --type standalone --title 'Gistio' --rootDir app-scripts",
     "push": "clasp push --force",
+    "deploy": "clasp push --force && clasp deploy --deploymentId $(node -e \"process.stdout.write(require('./clasp.config.json').deploymentId)\") --description 'manual deploy'",
     "pull": "clasp pull",
     "open": "clasp open",
     "logs": "clasp logs",

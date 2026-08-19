@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="140" viewBox="0 0 220 140">
+  <!-- Background -->
+  <rect width="220" height="140" fill="#111A1F"/>
+  <!-- Subtle radial glow -->
+  <radialGradient id="glow" cx="50%" cy="45%" r="55%">
+    <stop offset="0%" stop-color="#00C9A7" stop-opacity="0.12"/>
+    <stop offset="100%" stop-color="#00C9A7" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="220" height="140" fill="url(#glow)"/>
+
+  <!-- Sweep mark (centred, scaled down from 48x48 viewBox to ~36px) -->
+  <g transform="translate(92, 28) scale(0.75)">
+    <path d="M24 5A19 19 0 1 1 5 24" stroke="#00C9A7" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <path d="M24 12A12 12 0 1 1 12 24" stroke="#00C9A7" stroke-width="0.9" stroke-linecap="round" fill="none" opacity="0.28"/>
+    <line x1="24" y1="24" x2="37.5" y2="10.5" stroke="#00C9A7" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="37.5" cy="10.5" r="3.6" fill="#00C9A7"/>
+    <circle cx="24" cy="24" r="2" fill="#00C9A7" opacity="0.5"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="110" y="90"
+    font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+    font-size="22" font-weight="200"
+    letter-spacing="3"
+    fill="#E8F4F2"
+    text-anchor="middle">gistio</text>
+
+  <!-- Tagline -->
+  <text x="110" y="112"
+    font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+    font-size="9" font-weight="400"
+    letter-spacing="1.5"
+    fill="#4A6B67"
+    text-anchor="middle">GET THE GIST. SKIP THE NOISE.</text>
+</svg>

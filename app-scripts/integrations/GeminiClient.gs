@@ -106,7 +106,7 @@ function parseBatchResponse_(responseText, batch) {
 
   var jsonMatch = responseText.match(/\[[\s\S]*?\]/);
   if (!jsonMatch) {
-    Logger.log('WARN: Could not parse Gemini response for batch, defaulting to "other"');
+    console.warn('Could not parse Gemini response for batch, defaulting to "other"');
     return fallback;
   }
 
@@ -126,7 +126,7 @@ function parseBatchResponse_(responseText, batch) {
       };
     });
   } catch (err) {
-    Logger.log('WARN: JSON parse error: ' + err + ', defaulting batch to "other"');
+    console.warn('JSON parse error: ' + err + ', defaulting batch to "other"');
     return fallback;
   }
 }
@@ -183,14 +183,16 @@ function callGemini_(prompt, model) {
 /**
  * Sends emails to Gemini in batches and returns categorized results.
  */
-function analyzeEmails_(emails, batchSize) {
+function analyzeEmails_(emails, runId, batchSize) {
   batchSize = batchSize || 20;
   var results = [];
   var model   = getModel_();
+  var prefix  = runId ? '[' + runId + '] ' : '';
+  console.log(prefix + 'Model: ' + model);
 
   for (var i = 0; i < emails.length; i += batchSize) {
     var batch  = emails.slice(i, i + batchSize);
-    Logger.log('Analyzing emails ' + (i + 1) + '–' + (i + batch.length) + ' with ' + model + '...');
+    console.log(prefix + 'Analyzing batch ' + (i + 1) + '–' + (i + batch.length));
     var prompt = PROMPT_TEMPLATE.replace('{emails}', formatEmailsForPrompt_(batch));
     results    = results.concat(parseBatchResponse_(callGemini_(prompt, model), batch));
   }
