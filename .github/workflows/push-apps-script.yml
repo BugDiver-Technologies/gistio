@@ -72,6 +72,6 @@ jobs:
         if: steps.check.outputs.deploy == 'true'
         run: |
           DEPLOYMENT_ID=$(node -e "console.log(require('./clasp.config.json').deploymentId)")
-          clasp deploy \
+          npx clasp deploy \
             --deploymentId "$DEPLOYMENT_ID" \
             --description "$(git log -1 --pretty='%s')"
