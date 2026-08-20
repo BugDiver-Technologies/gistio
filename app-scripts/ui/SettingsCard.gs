@@ -55,12 +55,27 @@ function configFromForm_(e, saved) {
   var fi = e.formInput;
   return {
     hasKey: !!saved['GEMINI_API_KEY'],
-    freq:   fi['freq']      || saved['DIGEST_FREQ']   || DEFAULT_FREQ,
-    hour:   fi['hour']      || saved['DIGEST_HOUR']   || DEFAULT_HOUR,
-    day:    fi['month_day'] || saved['MONTH_DAY']     || DEFAULT_DAY,
-    label:  fi['label']     || saved['DIGEST_LABEL']  || DEFAULT_LABEL,
-    action: fi['action']    || saved['DIGEST_ACTION'] || DEFAULT_ACTION,
+    freq:   fi['freq']              || saved['DIGEST_FREQ']   || DEFAULT_FREQ,
+    hour:   fi['hour']              || saved['DIGEST_HOUR']   || DEFAULT_HOUR,
+    day:    fi['month_day']         || saved['MONTH_DAY']     || DEFAULT_DAY,
+    label:  (fi['label'] || '').trim() || saved['DIGEST_LABEL']  || DEFAULT_LABEL,
+    action: fi['action']            || saved['DIGEST_ACTION'] || DEFAULT_ACTION,
   };
+}
+
+/**
+ * Decides what to do with a submitted Gemini API key: save the new value,
+ * keep the existing one untouched, or report that one is required.
+ * @param {string} formKey   Raw value from the API key form field (may be empty)
+ * @param {string} savedKey  Existing GEMINI_API_KEY, if any
+ * @returns {{value: ?string, missing: boolean}}  value is set only when a new
+ *   key should be saved; missing is true only when no key exists anywhere.
+ */
+function resolveApiKey_(formKey, savedKey) {
+  var trimmed = (formKey || '').trim();
+  if (trimmed !== '') return { value: trimmed, missing: false };
+  if (savedKey)        return { value: null,    missing: false };
+  return { value: null, missing: true };
 }
 
 

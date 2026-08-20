@@ -65,4 +65,29 @@ describe('configFromForm_', () => {
     expect(config.day).toBe('1');
     expect(config.label).toBe('gistio/processed');
   });
+
+  test('whitespace-only label falls back to saved value, not the hardcoded default', () => {
+    const e = { formInput: { label: '   ' } };
+    const config = configFromForm_(e, saved);
+    expect(config.label).toBe('gistio/processed');
+  });
+});
+
+
+describe('resolveApiKey_', () => {
+  test('trims and uses a newly submitted key', () => {
+    expect(resolveApiKey_('  new-key  ', 'old-key')).toEqual({ value: 'new-key', missing: false });
+  });
+
+  test('keeps the existing key when the form field is left blank', () => {
+    expect(resolveApiKey_('', 'old-key')).toEqual({ value: null, missing: false });
+  });
+
+  test('reports missing when there is no new key and nothing saved', () => {
+    expect(resolveApiKey_('', undefined)).toEqual({ value: null, missing: true });
+  });
+
+  test('a whitespace-only submission is treated the same as blank', () => {
+    expect(resolveApiKey_('   ', undefined)).toEqual({ value: null, missing: true });
+  });
 });

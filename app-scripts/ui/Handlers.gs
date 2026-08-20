@@ -51,33 +51,28 @@ function onFrequencyChange_(e) {
 }
 
 function saveSettings_(e) {
-  var fi    = e.formInput;
   var props = PropertiesService.getUserProperties();
   captureTimezone_(e, props);
   var saved = props.getProperties();
 
-  var key = fi['gemini_api_key'];
-  if (key && key.trim() !== '') {
-    props.setProperty('GEMINI_API_KEY', key.trim());
-  } else if (!saved['GEMINI_API_KEY']) {
+  var apiKey = resolveApiKey_(e.formInput['gemini_api_key'], saved['GEMINI_API_KEY']);
+  if (apiKey.missing) {
     return CardService.newActionResponseBuilder()
       .setNotification(CardService.newNotification().setText('Gemini API key is required.'))
       .build();
   }
+  if (apiKey.value) props.setProperty('GEMINI_API_KEY', apiKey.value);
 
-  var freq   = fi['freq']      || DEFAULT_FREQ;
-  var hour   = fi['hour']      || DEFAULT_HOUR;
-  var day    = fi['month_day'] || DEFAULT_DAY;
-  var label  = (fi['label'] || '').trim() || DEFAULT_LABEL;
-  var action = fi['action']    || DEFAULT_ACTION;
+  var config = configFromForm_(e, saved);
+  props.setProperties({
+    'DIGEST_FREQ':   config.freq,
+    'DIGEST_HOUR':   config.hour,
+    'MONTH_DAY':     config.day,
+    'DIGEST_LABEL':  config.label,
+    'DIGEST_ACTION': config.action,
+  });
 
-  props.setProperty('DIGEST_FREQ',   freq);
-  props.setProperty('DIGEST_HOUR',   hour);
-  props.setProperty('MONTH_DAY',     day);
-  props.setProperty('DIGEST_LABEL',  label);
-  props.setProperty('DIGEST_ACTION', action);
-
-  setupUserTrigger_(freq, parseInt(hour, 10), parseInt(day, 10));
+  setupUserTrigger_(config.freq, parseInt(config.hour, 10), parseInt(config.day, 10));
 
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
