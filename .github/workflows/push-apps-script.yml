@@ -37,14 +37,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Check if app-scripts changed
         id: check
         run: |
-          git diff --name-only HEAD~1 HEAD | grep -q '^app-scripts/' \
-            && echo "deploy=true" >> "$GITHUB_OUTPUT" \
-            || echo "deploy=false" >> "$GITHUB_OUTPUT"
+          BASE="${{ github.event.before }}"
+          # workflow_dispatch (or a force-push base Git doesn't have) has no usable "before" — deploy to be safe.
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only "$BASE" "${{ github.sha }}" | grep -q '^app-scripts/' \
+              && echo "deploy=true" >> "$GITHUB_OUTPUT" \
+              || echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-node@v4
         if: steps.check.outputs.deploy == 'true'
