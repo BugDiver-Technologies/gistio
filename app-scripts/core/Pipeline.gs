@@ -49,15 +49,21 @@ function eveningDigest() {
     emails.forEach(function(e) { threadMap[e.threadId] = e.thread; });
 
     var processed = analyzeEmails_(emails, runId);
-    var kept      = processed.filter(isKeptUnread_);
+
+    var vipList = parseVipSenders_(props.getProperty('VIP_SENDERS') || '');
+    if (vipList.length > 0) {
+      processed = applyVipOverrides_(processed, vipList);
+      console.log(prefix + 'VIP overrides applied: ' + processed.filter(function(e) { return e.vip; }).length);
+    }
+
+    var kept    = processed.filter(isKeptUnread_);
+    var cleared = processed.filter(function(e) { return !isKeptUnread_(e); });
 
     // 1. Mark as read (or archive) low-priority threads
-    var toProcess = processed
-      .filter(function(e) { return !isKeptUnread_(e); })
-      .map(function(e) { return threadMap[e.threadId]; });
+    var toProcess = cleared.map(function(e) { return threadMap[e.threadId]; });
+    var action    = props.getProperty('DIGEST_ACTION') || 'mark_read';
 
     if (toProcess.length > 0) {
-      var action = props.getProperty('DIGEST_ACTION') || 'mark_read';
       if (action === 'archive') {
         archiveThreads_(toProcess);
         console.log(prefix + 'Archived ' + toProcess.length + ' threads');
@@ -88,6 +94,9 @@ function eveningDigest() {
       'LAST_RUN_CLEARED':   String(processed.length - kept.length),
       'LAST_RUN_ATTENTION': JSON.stringify(kept.slice(0, 10).map(function(e) {
         return { subject: e.subject, threadId: e.threadId };
+      })),
+      'LAST_RUN_CLEARED_ITEMS': JSON.stringify(cleared.slice(0, 15).map(function(e) {
+        return { subject: e.subject, threadId: e.threadId, category: e.category };
       })),
     });
     console.log(prefix + 'Done');

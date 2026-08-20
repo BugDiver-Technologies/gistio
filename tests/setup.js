@@ -19,5 +19,6 @@ global.Session     = { getScriptTimeZone: () => 'UTC' };
 // ---------------------------------------------------------------------------
 require('../app-scripts/core/DigestHeader.gs');
 require('../app-scripts/core/Digest.gs');
+require('../app-scripts/core/VipSenders.gs');
 require('../app-scripts/integrations/GeminiClient.gs');
 require('../app-scripts/ui/SettingsCard.gs');

@@ -70,6 +70,7 @@ function saveSettings_(e) {
     'MONTH_DAY':     config.day,
     'DIGEST_LABEL':  config.label,
     'DIGEST_ACTION': config.action,
+    'VIP_SENDERS':   config.vipSenders,
   });
 
   setupUserTrigger_(config.freq, parseInt(config.hour, 10), parseInt(config.day, 10));
@@ -108,6 +109,34 @@ function runNow_(e) {
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(props.getProperties())))
     .setNotification(CardService.newNotification().setText('Digest complete.'))
+    .build();
+}
+
+
+/**
+ * Undoes a cleared thread: restores it to the inbox, marks it unread, and
+ * removes the digest-processed label so it's picked up again next run.
+ */
+function restoreThread_(e) {
+  var props    = PropertiesService.getUserProperties();
+  var threadId = e.parameters.threadId;
+  var thread   = GmailApp.getThreadById(threadId);
+
+  if (thread) {
+    thread.markUnread();
+    thread.moveToInbox();
+    var label = GmailApp.getUserLabelByName(getLabelName_());
+    if (label) thread.removeLabel(label);
+  }
+
+  var saved = props.getProperties();
+  var items = saved['LAST_RUN_CLEARED_ITEMS'] ? JSON.parse(saved['LAST_RUN_CLEARED_ITEMS']) : [];
+  items = items.filter(function(item) { return item.threadId !== threadId; });
+  props.setProperty('LAST_RUN_CLEARED_ITEMS', JSON.stringify(items));
+
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().updateCard(buildDashboardCard_(props.getProperties())))
+    .setNotification(CardService.newNotification().setText('Restored to inbox.'))
     .build();
 }
 

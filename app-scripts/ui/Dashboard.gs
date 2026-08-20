@@ -75,6 +75,24 @@ function buildDashboardCard_(saved) {
       card.addSection(attentionSection);
     }
 
+    // Recently cleared — undo
+    var clearedJson = saved['LAST_RUN_CLEARED_ITEMS'];
+    var clearedItems = clearedJson ? JSON.parse(clearedJson) : [];
+    if (clearedItems.length > 0) {
+      var clearedSection = CardService.newCardSection().setHeader('Recently Cleared');
+      clearedItems.forEach(function(item) {
+        clearedSection.addWidget(CardService.newDecoratedText()
+          .setText(item.subject)
+          .setBottomLabel(item.category)
+          .setButton(CardService.newTextButton()
+            .setText('Restore')
+            .setOnClickAction(CardService.newAction()
+              .setFunctionName('restoreThread_')
+              .setParameters({ threadId: item.threadId }))));
+      });
+      card.addSection(clearedSection);
+    }
+
     // View digest link
     card.addSection(
       CardService.newCardSection()

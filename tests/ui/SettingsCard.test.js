@@ -29,6 +29,14 @@ describe('configFromSaved_', () => {
   test('hasKey is false when API key is empty string', () => {
     expect(configFromSaved_({ GEMINI_API_KEY: '' }).hasKey).toBe(false);
   });
+
+  test('vipSenders defaults to empty string', () => {
+    expect(configFromSaved_({}).vipSenders).toBe('');
+  });
+
+  test('reads saved VIP senders', () => {
+    expect(configFromSaved_({ VIP_SENDERS: 'boss@company.com' }).vipSenders).toBe('boss@company.com');
+  });
 });
 
 
@@ -70,6 +78,24 @@ describe('configFromForm_', () => {
     const e = { formInput: { label: '   ' } };
     const config = configFromForm_(e, saved);
     expect(config.label).toBe('gistio/processed');
+  });
+
+  test('vip_senders from the form takes precedence over saved', () => {
+    const e = { formInput: { vip_senders: 'boss@company.com' } };
+    const config = configFromForm_(e, { ...saved, VIP_SENDERS: 'old@company.com' });
+    expect(config.vipSenders).toBe('boss@company.com');
+  });
+
+  test('an emptied vip_senders field clears the saved list rather than falling back', () => {
+    const e = { formInput: { vip_senders: '' } };
+    const config = configFromForm_(e, { ...saved, VIP_SENDERS: 'boss@company.com' });
+    expect(config.vipSenders).toBe('');
+  });
+
+  test('vip_senders falls back to saved value when the field is untouched', () => {
+    const e = { formInput: {} };
+    const config = configFromForm_(e, { ...saved, VIP_SENDERS: 'boss@company.com' });
+    expect(config.vipSenders).toBe('boss@company.com');
   });
 });
 

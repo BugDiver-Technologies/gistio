@@ -29,11 +29,12 @@ var DAYS = (function() {
   return d;
 })();
 
-var DEFAULT_FREQ   = 'daily';
-var DEFAULT_HOUR   = '19';
-var DEFAULT_DAY    = '1';
-var DEFAULT_LABEL  = 'gistio/processed';
-var DEFAULT_ACTION = 'mark_read';
+var DEFAULT_FREQ        = 'daily';
+var DEFAULT_HOUR        = '19';
+var DEFAULT_DAY         = '1';
+var DEFAULT_LABEL       = 'gistio/processed';
+var DEFAULT_ACTION      = 'mark_read';
+var DEFAULT_VIP_SENDERS = '';
 
 
 // ---------------------------------------------------------------------------
@@ -42,24 +43,26 @@ var DEFAULT_ACTION = 'mark_read';
 
 function configFromSaved_(saved) {
   return {
-    hasKey: !!saved['GEMINI_API_KEY'],
-    freq:   saved['DIGEST_FREQ']   || DEFAULT_FREQ,
-    hour:   saved['DIGEST_HOUR']   || DEFAULT_HOUR,
-    day:    saved['MONTH_DAY']     || DEFAULT_DAY,
-    label:  saved['DIGEST_LABEL']  || DEFAULT_LABEL,
-    action: saved['DIGEST_ACTION'] || DEFAULT_ACTION,
+    hasKey:     !!saved['GEMINI_API_KEY'],
+    freq:       saved['DIGEST_FREQ']   || DEFAULT_FREQ,
+    hour:       saved['DIGEST_HOUR']   || DEFAULT_HOUR,
+    day:        saved['MONTH_DAY']     || DEFAULT_DAY,
+    label:      saved['DIGEST_LABEL']  || DEFAULT_LABEL,
+    action:     saved['DIGEST_ACTION'] || DEFAULT_ACTION,
+    vipSenders: saved['VIP_SENDERS']   || DEFAULT_VIP_SENDERS,
   };
 }
 
 function configFromForm_(e, saved) {
   var fi = e.formInput;
   return {
-    hasKey: !!saved['GEMINI_API_KEY'],
-    freq:   fi['freq']              || saved['DIGEST_FREQ']   || DEFAULT_FREQ,
-    hour:   fi['hour']              || saved['DIGEST_HOUR']   || DEFAULT_HOUR,
-    day:    fi['month_day']         || saved['MONTH_DAY']     || DEFAULT_DAY,
-    label:  (fi['label'] || '').trim() || saved['DIGEST_LABEL']  || DEFAULT_LABEL,
-    action: fi['action']            || saved['DIGEST_ACTION'] || DEFAULT_ACTION,
+    hasKey:     !!saved['GEMINI_API_KEY'],
+    freq:       fi['freq']                 || saved['DIGEST_FREQ']   || DEFAULT_FREQ,
+    hour:       fi['hour']                 || saved['DIGEST_HOUR']   || DEFAULT_HOUR,
+    day:        fi['month_day']            || saved['MONTH_DAY']     || DEFAULT_DAY,
+    label:      (fi['label'] || '').trim() || saved['DIGEST_LABEL']  || DEFAULT_LABEL,
+    action:     fi['action']               || saved['DIGEST_ACTION'] || DEFAULT_ACTION,
+    vipSenders: fi['vip_senders'] !== undefined ? fi['vip_senders'] : (saved['VIP_SENDERS'] || DEFAULT_VIP_SENDERS),
   };
 }
 
@@ -163,6 +166,20 @@ function buildSettingsCard_(config) {
           .setFieldName('action')
           .setValue('archive')
           .setSelected(config.action === 'archive')))
+  );
+
+  // ── VIP Senders ───────────────────────────────────────────────────────────
+  card.addSection(
+    CardService.newCardSection()
+      .setHeader('VIP Senders')
+      .addWidget(CardService.newTextParagraph()
+        .setText('These always stay unread, no matter what the AI decides.'))
+      .addWidget(CardService.newTextInput()
+        .setFieldName('vip_senders')
+        .setTitle('Emails or domains')
+        .setHint('One per line — e.g. boss@company.com or company.com')
+        .setMultiline(true)
+        .setValue(config.vipSenders))
   );
 
   card.setFixedFooter(

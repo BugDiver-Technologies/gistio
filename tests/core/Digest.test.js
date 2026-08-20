@@ -76,6 +76,17 @@ describe('buildDigest_', () => {
     expect(typeof result).toBe('string');
     expect(result).toContain('Total: 0');
   });
+
+  test('appends [VIP] tag for VIP-overridden kept emails', () => {
+    const vip = { ...kept, vip: true };
+    const result = buildDigest_([vip], 'UTC');
+    expect(result).toContain('Urgent bill  [VIP]');
+  });
+
+  test('does not append [VIP] tag for non-VIP kept emails', () => {
+    const result = buildDigest_([kept], 'UTC');
+    expect(result).not.toContain('[VIP]');
+  });
 });
 
 
@@ -152,5 +163,17 @@ describe('buildHtmlDigest_', () => {
     expect(typeof result).toBe('string');
     expect(result).toContain('>0<');
     expect(result).not.toContain('Needs attention');
+  });
+
+  test('tags a VIP-overridden kept email with VIP instead of its category', () => {
+    const vip = { ...kept, vip: true };
+    const result = buildHtmlDigest_([vip]);
+    expect(result).toContain('>VIP<');
+  });
+
+  test('tags a normal kept email with its category, not VIP', () => {
+    const result = buildHtmlDigest_([kept]);
+    expect(result).not.toContain('>VIP<');
+    expect(result).toContain('>important<');
   });
 });

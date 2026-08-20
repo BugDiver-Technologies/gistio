@@ -26,7 +26,7 @@ function buildDigest_(processed, timezone) {
     lines.push('\nKEPT UNREAD — NEEDS ATTENTION (' + kept.length + ')');
     lines.push('-'.repeat(40));
     kept.forEach(function(e) {
-      lines.push('  ' + e.subject);
+      lines.push('  ' + e.subject + (e.vip ? '  [VIP]' : ''));
       lines.push('  From   : ' + e.from);
       lines.push('  Summary: ' + e.summary);
       lines.push('');
@@ -94,7 +94,7 @@ function buildHtmlDigest_(processed) {
         : escapeHtml_(e.subject);
       body += digestRow_(
         subjectLink + '<br><span style="font-size:11px;color:#6B7280">' + escapeHtml_(e.from) + '</span>',
-        e.category,
+        e.vip ? 'VIP' : e.category,
         'attention'
       );
     });
