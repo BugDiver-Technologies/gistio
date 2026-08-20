@@ -183,45 +183,6 @@
     .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 7px; color: var(--ink); }
     .feature-card p { font-size: 14px; color: var(--muted); text-wrap: pretty; }
 
-    /* ── Compare ── */
-    .compare { background: var(--page); }
-    .compare p.lede { margin-top: 18px; font-size: 15px; color: var(--muted); max-width: 620px; text-wrap: pretty; }
-    .compare-table-wrap {
-      margin-top: 44px; overflow-x: auto;
-      border: 1px solid var(--hairline); border-radius: 14px;
-      background: var(--white);
-    }
-    table.compare-table { width: 100%; border-collapse: collapse; min-width: 640px; }
-    .compare-table th, .compare-table td {
-      text-align: left; padding: 16px 20px;
-      border-bottom: 1px solid var(--hairline);
-      font-size: 13.5px; vertical-align: top;
-    }
-    .compare-table tr:last-child th, .compare-table tr:last-child td { border-bottom: none; }
-    .compare-table thead th {
-      font-family: 'Outfit', sans-serif; font-weight: 400; font-size: 15px;
-      color: var(--ink); background: var(--page);
-      position: sticky; top: 0;
-    }
-    .compare-table thead th:first-child { color: var(--muted); font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
-    .compare-table th.col-gistio { color: #0C9C82; }
-    .compare-table tbody th {
-      font-weight: 600; color: var(--ink); white-space: nowrap;
-      background: var(--white);
-    }
-    .compare-table td { color: var(--muted); }
-    .compare-table td.highlight { color: var(--text); }
-    .compare-table td.highlight::before {
-      content: '✓ '; color: var(--teal); font-weight: 700;
-    }
-    .compare-note {
-      margin-top: 22px; padding: 16px 20px;
-      border-radius: 10px; background: rgba(245,158,11,.08);
-      border: 1px solid rgba(245,158,11,.25);
-      font-size: 13.5px; color: var(--text);
-    }
-    .compare-note strong { color: var(--ink); }
-
     /* ── Privacy ── */
     .privacy { background: var(--ink); text-align: center; }
     .privacy .inner { max-width: 640px; }
@@ -278,7 +239,6 @@
     <div class="nav-links">
       <a href="#how-it-works">How it works</a>
       <a href="#features">Features</a>
-      <a href="#compare">Compare</a>
       <a href="privacy.html">Privacy</a>
       <a class="cta" href="https://github.com/BugDiver-Technologies/gistio">View on GitHub</a>
     </div>
@@ -292,25 +252,25 @@
       <circle cx="37.5" cy="10.5" r="3.6" fill="currentColor"/>
       <circle cx="24" cy="24" r="2" fill="currentColor" opacity=".5"/>
     </svg>
-    <p class="eyebrow">Intelligent email triage</p>
+    <p class="eyebrow">Open-source · Personal project</p>
     <h1>Get the gist.<br>Skip the noise.</h1>
     <p class="lede">Gistio is a Gmail Add-on that uses AI to triage your inbox, clear low-priority emails, and deliver a crisp digest — on your schedule.</p>
     <div class="hero-actions">
-      <a class="btn-primary" href="https://github.com/BugDiver-Technologies/gistio">Get Early Access</a>
+      <a class="btn-primary" href="https://github.com/BugDiver-Technologies/gistio#setup">Install it yourself</a>
       <a class="btn-secondary" href="#how-it-works">See how it works</a>
     </div>
-    <p class="badge">Free &nbsp;·&nbsp; Runs inside Google &nbsp;·&nbsp; No data leaves your account</p>
+    <p class="badge">Free &nbsp;·&nbsp; Runs inside Google &nbsp;·&nbsp; Self-install, not on the Marketplace</p>
   </section>
 
   <section class="how" id="how-it-works">
     <div class="inner">
       <p class="section-label">How it works</p>
-      <h2>Five steps. Zero inbox anxiety.</h2>
+      <h2>Six steps. Zero inbox anxiety.</h2>
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
           <h3>Fetch</h3>
-          <p>Reads your unread inbox threads — up to 100 at a time.</p>
+          <p>Reads your unread inbox threads — up to 20 at a time.</p>
         </div>
         <div class="step">
           <div class="step-num">2</div>
@@ -319,16 +279,21 @@
         </div>
         <div class="step">
           <div class="step-num">3</div>
+          <h3>Override</h3>
+          <p>Your VIP senders and domains always stay unread, no matter what the AI decided.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
           <h3>Clear</h3>
           <p>Low-priority threads are marked as read or archived for you.</p>
         </div>
         <div class="step">
-          <div class="step-num">4</div>
+          <div class="step-num">5</div>
           <h3>Label</h3>
           <p>Processed threads are labelled so they're skipped next run.</p>
         </div>
         <div class="step">
-          <div class="step-num">5</div>
+          <div class="step-num">6</div>
           <h3>Digest</h3>
           <p>A clean summary email lands in your inbox — what needs you, what was cleared.</p>
         </div>
@@ -351,6 +316,16 @@
           <h3>Inbox cleanup</h3>
           <p>Mark low-priority threads as read or archive them entirely. Your choice, your inbox.</p>
         </div>
+        <div class="feature-card attention">
+          <div class="feature-dot"><span></span></div>
+          <h3>VIP senders</h3>
+          <p>Pin specific emails or whole domains that always stay unread — your override, on top of the AI's.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-dot"><span></span></div>
+          <h3>Undo</h3>
+          <p>Restore any recently-cleared thread back to the inbox with one click from the dashboard.</p>
+        </div>
         <div class="feature-card">
           <div class="feature-dot"><span></span></div>
           <h3>Flexible schedule</h3>
@@ -371,75 +346,6 @@
           <h3>Privacy-first</h3>
           <p>No external servers. Everything runs inside Google Apps Script. Your data stays yours.</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="compare" id="compare">
-    <div class="inner">
-      <p class="section-label">Compare</p>
-      <h2>How Gistio stacks up.</h2>
-      <p class="lede">Three different ways to get AI on top of your inbox — each built for a different job. Here's honestly where each one fits, Gistio included.</p>
-
-      <div class="compare-table-wrap">
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>&nbsp;</th>
-              <th class="col-gistio">Gistio</th>
-              <th>MorningBrief</th>
-              <th>Google Workspace Flows</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Cleans your inbox</th>
-              <td class="highlight">Marks low-priority mail read or archives it automatically</td>
-              <td>Read-only — summarizes, but your inbox is untouched</td>
-              <td>Depends what the flow is built to do — not inbox-cleanup by default</td>
-            </tr>
-            <tr>
-              <th scope="row">Who can turn it on</th>
-              <td class="highlight">Any individual — install from the Marketplace, no admin needed</td>
-              <td class="highlight">Any individual — sign up directly</td>
-              <td>Needs an org admin to build and enable the flow first</td>
-            </tr>
-            <tr>
-              <th scope="row">Where you use it</th>
-              <td class="highlight">Native Gmail Add-on sidebar, plus a digest email</td>
-              <td>Digest email only, separate web dashboard</td>
-              <td>A separate Flows/AppSheet builder and run-history UI</td>
-            </tr>
-            <tr>
-              <th scope="row">Cost model</th>
-              <td>Bring your own free Gemini API key — you pay only for what you use, if anything</td>
-              <td>Subscription after a 7-day trial</td>
-              <td class="highlight">Included in eligible Workspace/AppSheet plans — no separate key to manage</td>
-            </tr>
-            <tr>
-              <th scope="row">Setup effort</th>
-              <td>A few minutes — install, paste a Gemini key, pick a schedule</td>
-              <td class="highlight">Sign up and go — nothing to configure</td>
-              <td>Most effort — someone has to design the flow itself</td>
-            </tr>
-            <tr>
-              <th scope="row">Customization</th>
-              <td class="highlight">Open source — schedule, label, archive vs. mark-read, all yours to tune or fork</td>
-              <td>Whatever the product exposes in settings</td>
-              <td class="highlight">Very flexible — can chain into Chat, Sheets, other apps beyond email</td>
-            </tr>
-            <tr>
-              <th scope="row">Data path</th>
-              <td class="highlight">Stays inside Google Apps Script end to end, your own API key</td>
-              <td>Emails sent to a third-party service for processing</td>
-              <td class="highlight">Stays inside Google Workspace infrastructure</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="compare-note">
-        <strong>Where Gistio asks more of you:</strong> you'll need to grab a free Gemini API key yourself and paste it in during setup — it's the trade-off for not depending on Google's managed billing or an org admin. It's a two-minute step, but it's a step MorningBrief and an org-provisioned Flow don't require of you.
       </div>
     </div>
   </section>
